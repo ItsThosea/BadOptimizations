@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "badoptimizations",
+  "version": "${version}",
+  "name": "BadOptimizations",
+  "description": "Optimization mod that focuses on things other than rendering",
+  "authors": [
+    "Thosea"
+  ],
+  "contact": {},
+  "environment": "client",
+  "mixins": [
+    "badoptimizations.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.21",
+    "minecraft": "1.20.2"
+  },
+  "accessWidener": "badoptimizations.accesswidener"
+}
