@@ -3,7 +3,6 @@ package me.thosea.badoptimizations.mixin;
 import me.thosea.badoptimizations.ClientAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.GlTimer;
-import net.minecraft.client.gui.hud.DebugHud;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.util.Formatting;
@@ -28,7 +27,6 @@ public abstract class MixinClient implements ClientAccessor {
 	@Shadow public String fpsDebugString;
 	@Shadow private double gpuUtilizationPercentage;
 
-	@Shadow public abstract DebugHud getDebugHud();
 	@Shadow protected abstract int getFramerateLimit();
 
 	@Shadow private @Nullable GlTimer.Query currentGlTimerQuery;
@@ -61,7 +59,7 @@ public abstract class MixinClient implements ClientAccessor {
 
 	@Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiler/Profiler;push(Ljava/lang/String;)V", ordinal = 7), cancellable = true)
 	private void onDebugHandle(boolean tick, CallbackInfo ci) {
-		if(!getDebugHud().shouldShowDebugHud()) {
+		if(!options.debugEnabled) {
 			ci.cancel();
 
 			if(Util.getMeasuringTimeMs() >= nextDebugInfoUpdateTime + 1000L) {

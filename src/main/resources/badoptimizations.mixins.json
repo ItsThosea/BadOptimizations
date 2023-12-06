@@ -11,7 +11,7 @@
     "entitydata.MixinLivingEntity",
     "entitydata.MixinPlayer",
     "MixinClient",
-    "MixinDebugHud",
+    "MixinKeyboard",
     "tick.MixinGameRenderer",
     "tick.MixinTutorial"
   ],
