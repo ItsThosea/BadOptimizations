@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "me.thosea.badoptimizations.mixin",
   "compatibilityLevel": "JAVA_17",
+  "plugin": "me.thosea.badoptimizations.MixinPlugin",
   "client": [
     "MixinDataTracker",
     "MixinInGameHud",
