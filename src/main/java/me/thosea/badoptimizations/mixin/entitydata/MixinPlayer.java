@@ -1,24 +1,22 @@
 package me.thosea.badoptimizations.mixin.entitydata;
 
 import net.minecraft.client.render.entity.PlayerModelPart;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Arm;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
-public abstract class MixinPlayer extends LivingEntity {
+public abstract class MixinPlayer extends MixinEntity {
 	@Shadow @Final private static TrackedData<Float> ABSORPTION_AMOUNT;
 	@Unique private float absorptionAmount = 0f;
 
@@ -43,19 +41,19 @@ public abstract class MixinPlayer extends LivingEntity {
 	@Shadow @Final protected static TrackedData<NbtCompound> RIGHT_SHOULDER_ENTITY;
 	@Unique private NbtCompound shoulderEntityRight = new NbtCompound();
 
-	@Overwrite
-	public float getAbsorptionAmount() {
-		return absorptionAmount;
+	@Inject(method = "getAbsorptionAmount", at = @At("HEAD"), cancellable = true)
+	private void getAbsorptionAmount(CallbackInfoReturnable<Float> cir) {
+		cir.setReturnValue(absorptionAmount);
 	}
 
-	@Overwrite
-	public int getScore() {
-		return score;
+	@Inject(method = "getScore", at = @At("HEAD"), cancellable = true)
+	private void getScore(CallbackInfoReturnable<Integer> cir) {
+		cir.setReturnValue(score);
 	}
 
-	@Overwrite
-	public boolean isPartVisible(PlayerModelPart modelPart) {
-		return switch(modelPart) {
+	@Inject(method = "isPartVisible", at = @At("HEAD"), cancellable = true)
+	private void isPartVisible(PlayerModelPart modelPart, CallbackInfoReturnable<Boolean> cir) {
+		cir.setReturnValue(switch(modelPart) {
 			case CAPE -> isCapeEnabled;
 			case JACKET -> isJacketEnabled;
 			case LEFT_SLEEVE -> isLeftSleeveEnabled;
@@ -63,42 +61,43 @@ public abstract class MixinPlayer extends LivingEntity {
 			case LEFT_PANTS_LEG -> isLeftPantsLegEnabled;
 			case RIGHT_PANTS_LEG -> isRightPantsLegEnabled;
 			case HAT -> isHatEnabled;
-		};
+		});
+	}
+
+	@Inject(method = "getMainArm", at = @At("HEAD"), cancellable = true)
+	private void getMainArm(CallbackInfoReturnable<Arm> cir) {
+		cir.setReturnValue(mainArm);
+	}
+
+	@Inject(method = "getShoulderEntityLeft", at = @At("HEAD"), cancellable = true)
+	private void getShoulderEntityLeft(CallbackInfoReturnable<NbtCompound> cir) {
+		cir.setReturnValue(shoulderEntityLeft);
+	}
+
+	@Inject(method = "getShoulderEntityRight", at = @At("HEAD"), cancellable = true)
+	private void getShoulderEntityRight(CallbackInfoReturnable<NbtCompound> cir) {
+		cir.setReturnValue(shoulderEntityRight);
 	}
 
 	@Override
-	@Overwrite
-	public Arm getMainArm() {
-		return mainArm;
-	}
-
-	@Overwrite
-	public NbtCompound getShoulderEntityLeft() {
-		return shoulderEntityLeft;
-	}
-
-	@Overwrite
-	public NbtCompound getShoulderEntityRight() {
-		return shoulderEntityRight;
-	}
-
-	@Override
-	public void onTrackedDataSet(TrackedData<?> data) {
-		super.onTrackedDataSet(data);
-
+	protected void onDataSet(TrackedData<?> data, CallbackInfo ci) {
+		super.onDataSet(data, ci);
 		DataTracker dataTracker = getDataTracker();
+
 		if(ABSORPTION_AMOUNT.equals(data)) {
 			absorptionAmount = getDataTracker().get(ABSORPTION_AMOUNT);
 		} else if(SCORE.equals(data)) {
 			score = dataTracker.get(SCORE);
 		} else if(PLAYER_MODEL_PARTS.equals(data)) {
-			isCapeEnabled = (dataTracker.get(PLAYER_MODEL_PARTS) & 1) == 1;
-			isJacketEnabled = (dataTracker.get(PLAYER_MODEL_PARTS) & 2) == 2;
-			isLeftSleeveEnabled = (dataTracker.get(PLAYER_MODEL_PARTS) & 4) == 4;
-			isRightSleeveEnabled = (dataTracker.get(PLAYER_MODEL_PARTS) & 8) == 8;
-			isLeftPantsLegEnabled = (dataTracker.get(PLAYER_MODEL_PARTS) & 16) == 16;
-			isRightPantsLegEnabled = (dataTracker.get(PLAYER_MODEL_PARTS) & 32) == 32;
-			isHatEnabled = (dataTracker.get(PLAYER_MODEL_PARTS) & 64) == 64;
+			byte parts = dataTracker.get(PLAYER_MODEL_PARTS);
+
+			isCapeEnabled = (parts & 1) == 1;
+			isJacketEnabled = (parts & 2) == 2;
+			isLeftSleeveEnabled = (parts & 4) == 4;
+			isRightSleeveEnabled = (parts & 8) == 8;
+			isLeftPantsLegEnabled = (parts & 16) == 16;
+			isRightPantsLegEnabled = (parts & 32) == 32;
+			isHatEnabled = (parts & 64) == 64;
 		} else if(MAIN_ARM.equals(data)) {
 			mainArm = (byte) dataTracker.get(data) == 0 ? Arm.LEFT : Arm.RIGHT;
 		} else if(LEFT_SHOULDER_ENTITY.equals(data)) {
@@ -107,18 +106,4 @@ public abstract class MixinPlayer extends LivingEntity {
 			shoulderEntityRight = dataTracker.get(RIGHT_SHOULDER_ENTITY);
 		}
 	}
-
-	@Shadow
-	public abstract ItemStack getEquippedStack(EquipmentSlot slot);
-
-	@Shadow
-	public abstract void equipStack(EquipmentSlot slot, ItemStack stack);
-
-	@Shadow
-	public abstract Iterable<ItemStack> getArmorItems();
-
-	protected MixinPlayer(EntityType<? extends LivingEntity> entityType, World world) {
-		super(entityType, world);
-	}
-
 }

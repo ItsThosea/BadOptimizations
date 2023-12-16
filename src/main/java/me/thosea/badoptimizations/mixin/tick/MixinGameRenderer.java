@@ -1,5 +1,7 @@
 package me.thosea.badoptimizations.mixin.tick;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.option.Perspective;
@@ -14,7 +16,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GameRenderer.class)
@@ -33,8 +34,8 @@ public final class MixinGameRenderer {
 	}
 
 	// don't do unneeded FOV calculations
-	@Redirect(method = "updateFovMultiplier", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;getFovMultiplier()F"))
-	private float getPlayerFov(AbstractClientPlayerEntity instance) {
+	@WrapOperation(method = "updateFovMultiplier", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;getFovMultiplier()F"))
+	private float getPlayerFov(AbstractClientPlayerEntity instance, Operation<Float> original) {
 		if(fovEffectScale.getValue() == 0) {
 			if(client.options.getPerspective() == Perspective.FIRST_PERSON &&
 					client.getCameraEntity() instanceof AbstractClientPlayerEntity player &&
@@ -44,7 +45,7 @@ public final class MixinGameRenderer {
 				return 1.0f;
 			}
 		} else {
-			return instance.getFovMultiplier();
+			return original.call(instance);
 		}
 	}
 }

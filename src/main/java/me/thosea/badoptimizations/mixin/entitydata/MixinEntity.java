@@ -6,16 +6,14 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 
@@ -30,8 +28,7 @@ public abstract class MixinEntity {
 	@Shadow
 	public abstract boolean isFireImmune();
 
-	@Shadow private boolean glowing; // serverside
-	@Unique private boolean glowingClient;
+	@Unique private boolean glowing;
 	@Unique private boolean onFire = false;
 	@Unique private boolean sneaking = false;
 	@Unique private boolean sprinting = false;
@@ -63,81 +60,87 @@ public abstract class MixinEntity {
 	@Shadow @Final private static TrackedData<Integer> FROZEN_TICKS;
 
 	@Shadow public abstract DataTracker getDataTracker();
+	@Shadow private int fireTicks;
 	@Unique	private int frozenTicks = 0;
 
-	@Redirect(method = "isOnFire", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getFlag(I)Z"))
-	private boolean getIsOnFire(Entity instance, int index) {
-		return onFire;
+	@Inject(method = "isOnFire", at = @At("HEAD"), cancellable = true)
+	private void isOnFire(CallbackInfoReturnable<Boolean> cir) {
+		if(fireTicks > 0) {
+			cir.setReturnValue(true);
+		} else {
+			cir.setReturnValue(onFire && world.isClient);
+		}
 	}
 
-	@Overwrite
-	public boolean isSneaking() {
-		return sneaking;
+	@Inject(method = "isSneaking", at = @At("HEAD"), cancellable = true)
+	private void isSneaking(CallbackInfoReturnable<Boolean> cir) {
+		cir.setReturnValue(sneaking);
 	}
 
-	@Overwrite
-	public boolean isSprinting() {
-		return sprinting;
+	@Inject(method = "isSprinting", at = @At("HEAD"), cancellable = true)
+	private void isSprinting(CallbackInfoReturnable<Boolean> cir) {
+		cir.setReturnValue(sprinting);
 	}
 
-	@Overwrite
-	public boolean isSwimming() {
-		return swimming;
+	@Inject(method = "isSwimming", at = @At("HEAD"), cancellable = true)
+	private void isSwimming(CallbackInfoReturnable<Boolean> cir) {
+		cir.setReturnValue(swimming);
 	}
 
-	@Overwrite
-	public boolean isInvisible() {
-		return invisible;
+	@Inject(method = "isInvisible", at = @At("HEAD"), cancellable = true)
+	private void isInvisible(CallbackInfoReturnable<Boolean> cir) {
+		cir.setReturnValue(invisible);
 	}
 
-	@Overwrite
-	public boolean isGlowing() {
-		return world.isClient ? glowingClient : glowing;
+	@Inject(method = "isGlowing", at = @At("HEAD"), cancellable = true)
+	private void isGlowing(CallbackInfoReturnable<Boolean> cir) {
+		if(world.isClient) {
+			cir.setReturnValue(glowing);
+		}
 	}
 
-	@Overwrite
-	public int getAir() {
-		return remainingAirTicks;
+	@Inject(method = "getAir", at = @At("HEAD"), cancellable = true)
+	private void getAir(CallbackInfoReturnable<Integer> cir) {
+		cir.setReturnValue(remainingAirTicks);
 	}
 
-	@Overwrite
-	@Nullable
-	public Text getCustomName() {
-		return customName.orElse(null);
+	@Inject(method = "getCustomName", at = @At("HEAD"), cancellable = true)
+	private void getCustomName(CallbackInfoReturnable<Text> cir) {
+		cir.setReturnValue(customName.orElse(null));
 	}
 
-	@Overwrite
-	public boolean hasCustomName() {
-		return customName.isPresent();
+	@Inject(method = "hasCustomName", at = @At("HEAD"), cancellable = true)
+	private void hasCustomName(CallbackInfoReturnable<Boolean> cir) {
+		cir.setReturnValue(customName.isPresent());
 	}
 
-	@Overwrite
-	public boolean isCustomNameVisible() {
-		return nameVisible;
+	@Inject(method = "isCustomNameVisible", at = @At("HEAD"), cancellable = true)
+	private void isCustomNameVisible(CallbackInfoReturnable<Boolean> cir) {
+		cir.setReturnValue(nameVisible);
 	}
 
-	@Overwrite
-	public boolean isSilent() {
-		return silent;
+	@Inject(method = "isSilent", at = @At("HEAD"), cancellable = true)
+	private void isSilent(CallbackInfoReturnable<Boolean> cir) {
+		cir.setReturnValue(silent);
 	}
 
-	@Overwrite
-	public boolean hasNoGravity() {
-		return noGravity;
+	@Inject(method = "hasNoGravity", at = @At("HEAD"), cancellable = true)
+	private void hasNoGravity(CallbackInfoReturnable<Boolean> cir) {
+		cir.setReturnValue(noGravity);
 	}
 
-	@Overwrite
-	public EntityPose getPose() {
-		return pose;
+	@Inject(method = "getPose", at = @At("HEAD"), cancellable = true)
+	private void getPose(CallbackInfoReturnable<EntityPose> cir) {
+		cir.setReturnValue(pose);
 	}
 
-	@Overwrite
-	public int getFrozenTicks() {
-		return frozenTicks;
+	@Inject(method = "getFrozenTicks", at = @At("HEAD"), cancellable = true)
+	private void getFrozenTicks(CallbackInfoReturnable<Integer> cir) {
+		cir.setReturnValue(frozenTicks);
 	}
 
 	@Inject(method = "onTrackedDataSet", at = @At("HEAD"))
-	private void onDataSet(TrackedData<?> data, CallbackInfo ci) {
+	protected void onDataSet(TrackedData<?> data, CallbackInfo ci) {
 		DataTracker dataTracker = getDataTracker();
 
 		if(FLAGS.equals(data)) {
@@ -146,8 +149,9 @@ public abstract class MixinEntity {
 			sprinting = getFlag(3);
 			swimming = getFlag(4);
 			invisible = getFlag(5);
-			if(world.isClient)
-				glowingClient = getFlag(6);
+			if(world.isClient) {
+				glowing = getFlag(6);
+			}
 		} else if(AIR.equals(data)) {
 			remainingAirTicks = dataTracker.get(AIR);
 		} else if(CUSTOM_NAME.equals(data)) {
