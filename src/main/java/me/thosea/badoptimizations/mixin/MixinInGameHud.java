@@ -2,6 +2,7 @@ package me.thosea.badoptimizations.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import me.thosea.badoptimizations.mixin.accessor.EntityAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.InGameHud;
 import org.spongepowered.asm.mixin.Final;
@@ -17,7 +18,7 @@ public final class MixinInGameHud {
 
 	@WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;lerp(FFF)F", ordinal = 1))
 	private float calculatePortalEffect(float delta, float start, float end, Operation<Float> original) {
-		if(!client.player.inNetherPortal) {
+		if(!((EntityAccessor) client.player).isInNetherPortal()) {
 			return 0f;
 		} else {
 			return original.call(delta, start, end);
@@ -26,7 +27,6 @@ public final class MixinInGameHud {
 
 	@Inject(method = "tickAutosaveIndicator", at = @At("HEAD"), cancellable = true)
 	private void onTickAutosaveIndicator(CallbackInfo ci) {
-		 // Technically this check is already done but not as early
 		if(!client.isInSingleplayer()) ci.cancel();
 	}
 }
