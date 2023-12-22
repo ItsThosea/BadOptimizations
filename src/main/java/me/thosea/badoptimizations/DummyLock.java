@@ -10,6 +10,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 
 public final class DummyLock implements ReadWriteLock {
 	public static final DummyLock INSTANCE = new DummyLock();
+
 	private DummyLock() {}
 
 	private final Condition dummyCondition = new Condition() {
@@ -20,9 +21,9 @@ public final class DummyLock implements ReadWriteLock {
 		@Override
 		public long awaitNanos(long nanosTimeout) {return 0;}
 		@Override
-		public boolean await(long time, TimeUnit unit) {return false;}
+		public boolean await(long time, TimeUnit unit) {return true;}
 		@Override
-		public boolean awaitUntil(Date deadline) {return false;}
+		public boolean awaitUntil(Date deadline) {return true;}
 		@Override
 		public void signal() {}
 		@Override
