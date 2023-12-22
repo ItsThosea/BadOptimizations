@@ -35,17 +35,15 @@ public final class MixinGameRenderer {
 
 	// don't do unneeded FOV calculations
 	@WrapOperation(method = "updateFovMultiplier", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;getFovMultiplier()F"))
-	private float getPlayerFov(AbstractClientPlayerEntity instance, Operation<Float> original) {
+	private float getPlayerFov(AbstractClientPlayerEntity player, Operation<Float> original) {
 		if(fovEffectScale.getValue() == 0) {
-			if(client.options.getPerspective() == Perspective.FIRST_PERSON &&
-					client.getCameraEntity() instanceof AbstractClientPlayerEntity player &&
-					player.isUsingSpyglass()) {
+			if(client.options.getPerspective() == Perspective.FIRST_PERSON && player.isUsingSpyglass()) {
 				return 0.1f;
 			} else {
 				return 1.0f;
 			}
 		} else {
-			return original.call(instance);
+			return original.call(player);
 		}
 	}
 }
