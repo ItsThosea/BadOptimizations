@@ -13,6 +13,6 @@
     "badoptimizations.mixins.json"
   ],
   "depends": {
-    "minecraft": ">=1.19.2"
+    "minecraft": "1.20.1"
   }
 }
