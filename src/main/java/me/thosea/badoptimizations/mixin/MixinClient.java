@@ -35,7 +35,7 @@ public abstract class MixinClient implements ClientAccessor {
 	@Shadow private long metricsSampleDuration;
 
 	@Override
-	public void updateFpsString() {
+	public void badoptimizations$updateFpsString() {
 		int limit = getFramerateLimit();
 
 		if(currentGlTimerQuery != null && currentGlTimerQuery.isResultAvailable()) {
@@ -84,10 +84,9 @@ public abstract class MixinClient implements ClientAccessor {
 			currentFps = fpsCounter;
 			nextDebugInfoUpdateTime += 1000L;
 			fpsCounter = 0;
-			fpsDebugString = "";
 
 			if(getDebugHud().shouldShowDebugHud()) {
-				updateFpsString();
+				badoptimizations$updateFpsString();
 			}
 		}
 	}
