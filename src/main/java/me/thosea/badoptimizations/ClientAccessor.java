@@ -1,5 +1,5 @@
 package me.thosea.badoptimizations;
 
 public interface ClientAccessor {
-	void updateFpsString();
+	void badoptimizations$updateFpsString();
 }

@@ -11,14 +11,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(DebugHud.class)
-public final class MixinDebugHud {
+public abstract class MixinDebugHud {
+	@Shadow public abstract boolean shouldShowDebugHud();
 	@Shadow @Final private MinecraftClient client;
-	@Shadow private boolean showDebugHud;
 
 	@Inject(method = "toggleDebugHud", at = @At("TAIL"))
 	private void renderInject(CallbackInfo ci) {
-		if(showDebugHud) {
-			((ClientAccessor) client).updateFpsString();
+		if(shouldShowDebugHud()) {
+			((ClientAccessor) client).badoptimizations$updateFpsString();
 		}
 	}
 }
