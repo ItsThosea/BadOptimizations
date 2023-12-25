@@ -12,6 +12,8 @@ It does multiple things:<p>
   Minecraft uses thread locks to make sure only one thread accesses DataTracker at a time, which uses (somewhat) expensive thread locks. These are completely redundant. I wrote a temporary script that would crash the game if more than one thread accesses an entity's DataTracker, ever. The game didn't crash at all.
 - **Don't do unnecessary FOV calculations if we don't need to**<p>
   When you're spectating either a player or nobody, the game calculates your FOV factor (e.g. charging bow / potion effects), even if your FOV effect scale is zero. This mod removes this calculation if your FOV effect scale is zero.<p>
+- **Replace `removeIf` call in ToastManager**<p>
+  This one replaces the default Java `removeIf` call used in vanilla for toasts with a more direct one. The default Java implementation calls the predicate twice, which, in this case, causes each toast to get rendered twice. This mod replaces the `removeIf` call with an `Iterator`, improving performance whether toasts are present or not. <p>
 
 <p>
 That's all the big optimizations. The rest don't do a lot, but still help (e.g. caching entity flags, avoiding unnecessary lerp calls)
