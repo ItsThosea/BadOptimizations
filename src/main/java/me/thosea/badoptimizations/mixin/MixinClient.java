@@ -3,6 +3,7 @@ package me.thosea.badoptimizations.mixin;
 import me.thosea.badoptimizations.ClientAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.GlTimer;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.util.Formatting;
@@ -72,6 +73,13 @@ public abstract class MixinClient implements ClientAccessor {
 		this.fpsDebugString = builder.toString();
 	}
 
+	@Inject(method = "setScreen", at = @At("TAIL"))
+	private void onOpenScreen(Screen screen, CallbackInfo ci) {
+		if(screen != null && options.hudHidden && options.debugEnabled) {
+			badoptimizations$updateFpsString();
+		}
+	}
+
 	@Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiler/Profiler;push(Ljava/lang/String;)V", ordinal = 7), cancellable = true)
 	private void onDebugHandle(boolean tick, CallbackInfo ci) {
 		ci.cancel();
@@ -82,7 +90,7 @@ public abstract class MixinClient implements ClientAccessor {
 			nextDebugInfoUpdateTime += 1000L;
 			fpsCounter = 0;
 
-			if(options.debugEnabled && !options.hudHidden) {
+			if(ClientAccessor.shouldUpdateFpsString(MinecraftClient.getInstance())) {
 				badoptimizations$updateFpsString();
 			}
 		}
