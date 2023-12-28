@@ -84,7 +84,7 @@ public abstract class MixinClient implements ClientAccessor {
 	private void onDebugHandle(boolean tick, CallbackInfo ci) {
 		ci.cancel();
 
-		if(Util.getMeasuringTimeMs() >= nextDebugInfoUpdateTime + 1000L) {
+		while(Util.getMeasuringTimeMs() >= nextDebugInfoUpdateTime + 1000L) {
 			// Track FPS
 			currentFps = fpsCounter;
 			nextDebugInfoUpdateTime += 1000L;
