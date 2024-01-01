@@ -1,5 +1,6 @@
 package me.thosea.badoptimizations.mixin.entitydata;
 
+import me.thosea.badoptimizations.EntityAccessor;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.data.DataTracker;
@@ -12,15 +13,14 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 
 @Mixin(Entity.class)
-public abstract class MixinEntity {
+public abstract class MixinEntity implements EntityAccessor {
 	@Shadow @Final protected static TrackedData<Byte> FLAGS;
-	@Shadow private World world;
+	@Shadow public World world;
 
 	@Shadow
 	protected abstract boolean getFlag(int index);
@@ -139,8 +139,8 @@ public abstract class MixinEntity {
 		cir.setReturnValue(frozenTicks);
 	}
 
-	@Inject(method = "onTrackedDataSet", at = @At("HEAD"))
-	protected void onDataSet(TrackedData<?> data, CallbackInfo ci) {
+	@Override
+	public void badoptimizations$refreshEntityData(TrackedData<?> data) {
 		DataTracker dataTracker = getDataTracker();
 
 		if(FLAGS.equals(data)) {
