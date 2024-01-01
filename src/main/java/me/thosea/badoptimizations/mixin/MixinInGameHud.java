@@ -2,7 +2,7 @@ package me.thosea.badoptimizations.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import me.thosea.badoptimizations.mixin.accessor.EntityAccessor;
+import me.thosea.badoptimizations.mixin.accessor.EntityFieldAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.InGameHud;
 import org.spongepowered.asm.mixin.Final;
@@ -18,7 +18,7 @@ public final class MixinInGameHud {
 
 	@WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;lerp(FFF)F", ordinal = 1))
 	private float calculatePortalEffect(float delta, float start, float end, Operation<Float> original) {
-		if(!((EntityAccessor) client.player).isInNetherPortal()) {
+		if(!((EntityFieldAccessor) client.player).isInNetherPortal()) {
 			return 0f;
 		} else {
 			return original.call(delta, start, end);

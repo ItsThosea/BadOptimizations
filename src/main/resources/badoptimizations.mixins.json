@@ -9,7 +9,7 @@
     "MixinInGameHud",
     "MixinKeyboard",
     "MixinToastManager",
-    "accessor.EntityAccessor",
+    "accessor.EntityFieldAccessor",
     "entitydata.MixinEntity",
     "entitydata.MixinLivingEntity",
     "entitydata.MixinPlayer",

@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
@@ -88,8 +87,8 @@ public abstract class MixinLivingEntity extends MixinEntity {
 	}
 
 	@Override
-	protected void onDataSet(TrackedData<?> data, CallbackInfo ci) {
-		super.onDataSet(data, ci);
+	public void badoptimizations$refreshEntityData(TrackedData<?> data) {
+		super.badoptimizations$refreshEntityData(data);
 
 		DataTracker dataTracker = getDataTracker();
 
