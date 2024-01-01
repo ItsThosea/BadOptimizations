@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
@@ -80,8 +79,9 @@ public abstract class MixinPlayer extends MixinEntity {
 	}
 
 	@Override
-	protected void onDataSet(TrackedData<?> data, CallbackInfo ci) {
-		super.onDataSet(data, ci);
+	public void badoptimizations$refreshEntityData(TrackedData<?> data) {
+		super.badoptimizations$refreshEntityData(data);
+
 		DataTracker dataTracker = getDataTracker();
 
 		if(ABSORPTION_AMOUNT.equals(data)) {
