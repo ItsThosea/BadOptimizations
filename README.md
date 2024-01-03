@@ -6,8 +6,10 @@ Most optimization mods focus on rendering performance and optimizing Minecraft's
 ## Wait, what does this even do?
 It does multiple things:<p>
 
+- **Avoid updating lightmap**<p>
+  Updating lightmap textures are probably the most expensive part of the client tick. During each tick, the client will do some vector math to calculate lightmaps for blocks and the sky, then upload that new texture to the GPU. However, this can be completely avoided and cached if nothing affecting brightness is changed. This mod will cancel lightmap updates if nothing that changes brightness (e.g. gamma slider, potion effects) has changed.
 - **Don't do F3 calculations if we're not in the F3 menu**<p>
-  This is the biggest optimization. You'd be surprised to see how expensive the calculations are to F3, even when it's not open. Notably, the FPS string uses `String.format`, a very slow function call. This mod makes that function only get called if you're actually in the F3 menu. Don't worry, this won't break FPS counter mods.<p>*(also, you really shouldn't be using F3 often anyway, it decreases performance significantly, use an FPS counter mod.)*</p>
+  You'd be surprised to see how expensive the calculations are to F3, even when it's not open. Notably, the FPS string uses `String.format`, a very slow function call. This mod makes that function only get called if you're actually in the F3 menu. Don't worry, this won't break FPS counter mods.<p>*(also, you really shouldn't be using F3 often anyway, it decreases performance significantly, use an FPS counter mod.)*</p>
 - **Remove unnecessary thread synchronization from DataTracker / SyncedEntityData**<p>
   Minecraft uses thread locks to make sure only one thread accesses DataTracker at a time, which uses (somewhat) expensive thread locks. These are completely redundant. I wrote a temporary script that would crash the game if more than one thread accesses an entity's DataTracker, ever. The game didn't crash at all.
 - **Don't do unnecessary FOV calculations if we don't need to**<p>
