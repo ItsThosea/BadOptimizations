@@ -8,12 +8,15 @@
     "MixinDataTracker",
     "MixinInGameHud",
     "MixinKeyboard",
+    "MixinParticleManager",
     "MixinToastManager",
     "accessor.EntityFieldAccessor",
+    "accessor.GameRendererFieldAccessor",
     "entitydata.MixinEntity",
     "entitydata.MixinLivingEntity",
     "entitydata.MixinPlayer",
     "tick.MixinGameRenderer",
+    "tick.MixinLightmapManager",
     "tick.MixinTutorial"
   ],
   "injectors": {
