@@ -7,7 +7,9 @@ Most optimization mods focus on rendering performance and optimizing Minecraft's
 It does multiple things:<p>
 
 - **Avoid updating lightmap**<p>
-  Updating lightmap textures are probably the most expensive part of the client tick. During each tick, the client will do some vector math to calculate lightmaps for blocks and the sky, then upload that new texture to the GPU. However, this can be completely avoided and cached if nothing affecting brightness is changed. This mod will cancel lightmap updates if nothing that changes brightness (e.g. gamma slider, potion effects) has changed.
+  Updating lightmap textures are probably the most expensive part of the client tick. During each tick, the client will do some vector math to calculate lightmaps for blocks and the sky, then upload that new texture to the GPU. However, this can be completely avoided and cached if nothing affecting brightness is changed. This mod will cancel lightmap updates if nothing that changes brightness (e.g. gamma slider, potion effects) has changed. 
+- **Avoid calculating cloud and sky colors**<p>
+  Rather than calculating the current sky and cloud colors every frame, it will only be done every tick, and only will be done if something affecting it has changed.
 - **Don't do F3 calculations if we're not in the F3 menu**<p>
   You'd be surprised to see how expensive the calculations are to F3, even when it's not open. Notably, the FPS string uses `String.format`, a very slow function call. This mod makes that function only get called if you're actually in the F3 menu. Don't worry, this won't break FPS counter mods.<p>*(also, you really shouldn't be using F3 often anyway, it decreases performance significantly, use an FPS counter mod.)*</p>
 - **Remove unnecessary thread synchronization from DataTracker / SyncedEntityData**<p>
