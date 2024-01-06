@@ -16,6 +16,8 @@
     "entitydata.MixinEntity",
     "entitydata.MixinLivingEntity",
     "entitydata.MixinPlayer",
+    "tick.MixinClientWorldCloudColor",
+    "tick.MixinClientWorldSkyColor",
     "tick.MixinGameRenderer",
     "tick.MixinLightmapManager",
     "tick.MixinTutorial"
