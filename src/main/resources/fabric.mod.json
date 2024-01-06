@@ -14,5 +14,16 @@
   ],
   "depends": {
     "minecraft": ">=1.20.2"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.source": "https://github.com/ItsThosea/BadOpitmizations/",
+        "modmenu.issues": "https://github.com/ItsThosea/BadOpitmizations/issues/",
+        "modmenu.modrinth": "https://modrinth.com/mod/badoptimizations/",
+        "modmenu.curseforge": "https://curseforge.com/minecraft/mc-mods/badoptimizations"
+      },
+      "update_checker": true
+    }
   }
 }
