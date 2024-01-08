@@ -1,3 +1,5 @@
+.architectury-transformer/
+
 # gradle
 
 .gradle/
@@ -28,9 +30,8 @@ bin/
 
 *.DS_Store
 
-# fabric
-
-run/
+fabric/run/
+forge/run
 
 # java
 
