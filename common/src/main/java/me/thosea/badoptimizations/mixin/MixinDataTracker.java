@@ -5,6 +5,7 @@ import me.thosea.badoptimizations.EntityAccessor;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.DataTracker.Entry;
+import net.minecraft.entity.data.DataTracker.SerializedEntry;
 import net.minecraft.entity.data.TrackedData;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,7 +36,7 @@ public abstract class MixinDataTracker {
 	}
 
 	@Inject(method = "copyToFrom", at = @At("TAIL"))
-	private void onCopy(Entry<?> to, Entry<?> from, CallbackInfo ci) {
+	private void onCopy(Entry<?> to, SerializedEntry<?> from, CallbackInfo ci) {
 		entityAccessor.badoptimizations$refreshEntityData(to.getData());
 	}
 }
