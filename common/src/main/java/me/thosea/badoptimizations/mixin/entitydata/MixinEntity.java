@@ -22,12 +22,6 @@ public abstract class MixinEntity implements EntityAccessor {
 	@Shadow @Final protected static TrackedData<Byte> FLAGS;
 	@Shadow private World world;
 
-	@Shadow
-	protected abstract boolean getFlag(int index);
-
-	@Shadow
-	public abstract boolean isFireImmune();
-
 	@Unique private boolean glowing;
 	@Unique private boolean onFire = false;
 	@Unique private boolean sneaking = false;
@@ -139,18 +133,28 @@ public abstract class MixinEntity implements EntityAccessor {
 		cir.setReturnValue(frozenTicks);
 	}
 
+	@Shadow
+	public abstract boolean isFireImmune();
+
+	@Unique
+	private boolean getFlag(byte flags, int index) {
+		return (flags & 1 << index) != 0;
+	}
+
 	@Override
 	public void badoptimizations$refreshEntityData(TrackedData<?> data) {
 		DataTracker dataTracker = getDataTracker();
 
 		if(FLAGS.equals(data)) {
-			onFire = !isFireImmune() && getFlag(0);
-			sneaking = getFlag(1);
-			sprinting = getFlag(3);
-			swimming = getFlag(4);
-			invisible = getFlag(5);
+			byte flags = dataTracker.get(FLAGS);
+
+			onFire = getFlag(flags, 0) && !isFireImmune();
+			sneaking = getFlag(flags, 1);
+			sprinting = getFlag(flags, 3);
+			swimming = getFlag(flags, 4);
+			invisible = getFlag(flags, 5);
 			if(world.isClient) {
-				glowing = getFlag(6);
+				glowing = getFlag(flags, 6);
 			}
 		} else if(AIR.equals(data)) {
 			remainingAirTicks = dataTracker.get(AIR);
