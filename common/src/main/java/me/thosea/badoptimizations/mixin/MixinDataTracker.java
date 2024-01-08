@@ -30,8 +30,8 @@ public abstract class MixinDataTracker {
 		this.entityAccessor = (EntityAccessor) trackedEntity;
 	}
 
-	@Inject(method = "set", at = @At(value = "INVOKE", shift = Shift.AFTER, target = "Lnet/minecraft/entity/data/DataTracker$Entry;set(Ljava/lang/Object;)V"))
-	private void onDataSet(TrackedData<?> key, Object value, CallbackInfo ci) {
+	@Inject(method = "set(Lnet/minecraft/entity/data/TrackedData;Ljava/lang/Object;Z)V", at = @At(value = "INVOKE", shift = Shift.AFTER, target = "Lnet/minecraft/entity/data/DataTracker$Entry;set(Ljava/lang/Object;)V"))
+	private void onDataSet(TrackedData<?> key, Object value, boolean force, CallbackInfo ci) {
 		entityAccessor.badoptimizations$refreshEntityData(key);
 	}
 
