@@ -76,7 +76,7 @@ public abstract class MixinClientWorldSkyColor extends World {
 
 	@Inject(method = "getSkyColor", at = @At("HEAD"), cancellable = true)
 	private void onGetColorHead(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
-		if(lastTick == -1) return;
+		if(skyColorCache == null) return;
 
 		int tick = client.player.age;
 
@@ -91,7 +91,7 @@ public abstract class MixinClientWorldSkyColor extends World {
 		cir.setReturnValue(skyColorCache);
 	}
 
-	@Inject(method = "getSkyColor", at = @At("TAIL"))
+	@Inject(method = "getSkyColor", at = @At("RETURN"))
 	private void onGetColorTail(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
 		skyColorCache = cir.getReturnValue();
 	}
@@ -99,7 +99,6 @@ public abstract class MixinClientWorldSkyColor extends World {
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void afterInit(CallbackInfo ci) {
 		lastTick = -1;
-		getSkyColor(Vec3d.ZERO, client.getTickDelta());
 	}
 
 	protected MixinClientWorldSkyColor(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimension, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed, int maxChainedNeighborUpdates) {

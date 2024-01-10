@@ -61,7 +61,7 @@ public abstract class MixinClientWorldCloudColor extends World {
 
 	@Inject(method = "getCloudsColor", at = @At("HEAD"), cancellable = true)
 	private void onGetCloudColorHead(float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
-		if(lastTick == -1) return;
+		if(cloudColorCache == null) return;
 
 		int tick = client.player.age;
 
@@ -76,7 +76,7 @@ public abstract class MixinClientWorldCloudColor extends World {
 		cir.setReturnValue(cloudColorCache);
 	}
 
-	@Inject(method = "getCloudsColor", at = @At("TAIL"))
+	@Inject(method = "getCloudsColor", at = @At("RETURN"))
 	private void onGetCloudColorTail(float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
 		cloudColorCache = cir.getReturnValue();
 	}
@@ -84,7 +84,6 @@ public abstract class MixinClientWorldCloudColor extends World {
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void afterInit(CallbackInfo ci) {
 		lastTick = -1;
-		getCloudsColor(client.getTickDelta());
 	}
 
 	protected MixinClientWorldCloudColor(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimension, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed, int maxChainedNeighborUpdates) {
