@@ -1,14 +1,15 @@
 package me.thosea.badoptimizations.mixin.tick;
 
+import me.thosea.badoptimizations.BiomeSkyColorGetter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.MutableWorldProperties;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,12 +25,16 @@ import java.util.function.Supplier;
 @Mixin(ClientWorld.class)
 public abstract class MixinClientWorldSkyColor extends World {
 	@Shadow @Final private MinecraftClient client;
+	@Unique private BiomeSkyColorGetter biomeColors;
 
 	@Unique private Vec3d skyColorCache;
 	@Unique private int lastTick;
 
 	@Unique private long previousTime;
-	@Unique private RegistryEntry<Biome> previousBiome;
+
+	@Unique private int previousBiomeColor;
+	@Unique private Vec3d previousCameraPos;
+
 	@Unique private float previousRainGradient;
 	@Unique private float previousThunderGradient;
 	@Unique private int previousLightningTicks;
@@ -44,9 +49,7 @@ public abstract class MixinClientWorldSkyColor extends World {
 			result = true;
 		}
 
-		RegistryEntry<Biome> biome = getBiomeAccess().getBiomeForNoiseGen(pos.x, pos.y, pos.z);
-		if(previousBiome != biome) {
-			previousBiome = biome;
+		if(isBiomeDirty(pos)) {
 			result = true;
 		}
 
@@ -69,6 +72,32 @@ public abstract class MixinClientWorldSkyColor extends World {
 		}
 
 		return result;
+	}
+
+	@Unique
+	private boolean isBiomeDirty(Vec3d pos) {
+		pos = pos.subtract(2.0, 2.0, 2.0).multiply(0.25);
+
+		if(pos.squaredDistanceTo(previousCameraPos) < (0.23 * 0.23)) {
+			return false;
+		} else {
+			previousCameraPos = pos;
+		}
+
+		int x = MathHelper.floor(pos.x);
+		int y = MathHelper.floor(pos.y);
+		int z = MathHelper.floor(pos.z);
+
+		int color = biomeColors.get(x, y, z);
+		if(previousBiomeColor != color) {
+			previousBiomeColor = color;
+			return true;
+		} else if(biomeColors.get(x - 2, y - 2, z - 2) != color
+				|| biomeColors.get(x + 3, y + 3, z + 3) != color) {
+			return true;
+		}
+
+		return false;
 	}
 
 	@Shadow public abstract int getLightningTicksLeft();
@@ -99,6 +128,8 @@ public abstract class MixinClientWorldSkyColor extends World {
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void afterInit(CallbackInfo ci) {
 		lastTick = -1;
+		previousCameraPos = new Vec3d(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE);
+		biomeColors = BiomeSkyColorGetter.of(getBiomeAccess());
 	}
 
 	protected MixinClientWorldSkyColor(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimension, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed, int maxChainedNeighborUpdates) {
