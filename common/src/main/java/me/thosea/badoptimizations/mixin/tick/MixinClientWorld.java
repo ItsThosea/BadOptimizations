@@ -1,6 +1,6 @@
 package me.thosea.badoptimizations.mixin.tick;
 
-import me.thosea.badoptimizations.BiomeSkyColorGetter;
+import me.thosea.badoptimizations.interfaces.BiomeSkyColorGetter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.MathHelper;
@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.function.Supplier;
 
 @Mixin(ClientWorld.class)
-public abstract class MixinClientWorldSkyColor extends World {
+public abstract class MixinClientWorld extends World {
 	@Shadow @Final private MinecraftClient client;
 	@Unique private BiomeSkyColorGetter biomeColors;
 
@@ -33,6 +33,8 @@ public abstract class MixinClientWorldSkyColor extends World {
 	@Unique private long previousTime;
 
 	@Unique private int previousBiomeColor;
+	@Unique private Vec3d biomeColorVector;
+
 	@Unique private Vec3d previousCameraPos;
 
 	@Unique private float previousRainGradient;
@@ -42,12 +44,6 @@ public abstract class MixinClientWorldSkyColor extends World {
 	@Unique
 	private boolean isSkyColorDirty(Vec3d pos) {
 		boolean result = false;
-
-		long time = getTimeOfDay(); // public World method
-		if(Math.abs(time - previousTime) >= 50) {
-			previousTime = time;
-			result = true;
-		}
 
 		if(isBiomeDirty(pos)) {
 			result = true;
@@ -76,8 +72,6 @@ public abstract class MixinClientWorldSkyColor extends World {
 
 	@Unique
 	private boolean isBiomeDirty(Vec3d pos) {
-		pos = pos.subtract(2.0, 2.0, 2.0).multiply(0.25);
-
 		if(pos.squaredDistanceTo(previousCameraPos) < (0.23 * 0.23)) {
 			return false;
 		} else {
@@ -91,6 +85,7 @@ public abstract class MixinClientWorldSkyColor extends World {
 		int color = biomeColors.get(x, y, z);
 		if(previousBiomeColor != color) {
 			previousBiomeColor = color;
+			biomeColorVector = Vec3d.unpackRgb(color);
 			return true;
 		} else if(biomeColors.get(x - 2, y - 2, z - 2) != color
 				|| biomeColors.get(x + 3, y + 3, z + 3) != color) {
@@ -112,12 +107,43 @@ public abstract class MixinClientWorldSkyColor extends World {
 		if(lastTick != tick) {
 			lastTick = tick;
 
+			cameraPos = cameraPos.subtract(2.0, 2.0, 2.0).multiply(0.25);
+
 			if(isSkyColorDirty(cameraPos)) {
 				return;
+			} else {
+				long time = getTimeOfDay(); // public World method
+				if(Math.abs(time - previousTime) >= 3) {
+					previousTime = time;
+					calcSkyColor();
+				}
 			}
 		}
 
 		cir.setReturnValue(skyColorCache);
+	}
+
+	@Unique
+	private void calcSkyColor() {
+		double x = 0;
+		double y = 0;
+		double z = 0;
+
+		for(double multiplier : BiomeSkyColorGetter.MULTIPLIERS) {
+			x += biomeColorVector.x * multiplier;
+			y += biomeColorVector.y * multiplier;
+			z += biomeColorVector.z * multiplier;
+		}
+
+		double multiplier = 1.0 / 4096;
+		x *= multiplier;
+		y *= multiplier;
+		z *= multiplier;
+
+		float angle = MathHelper.cos(getSkyAngle(1.0f) * 6.2831855F) * 2.0F + 0.5F;
+		angle = MathHelper.clamp(angle, 0.0F, 1.0F);
+
+		skyColorCache = new Vec3d(x * angle, y * angle, z * angle);
 	}
 
 	@Inject(method = "getSkyColor", at = @At("RETURN"))
@@ -132,7 +158,7 @@ public abstract class MixinClientWorldSkyColor extends World {
 		biomeColors = BiomeSkyColorGetter.of(getBiomeAccess());
 	}
 
-	protected MixinClientWorldSkyColor(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimension, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed, int maxChainedNeighborUpdates) {
+	protected MixinClientWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimension, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed, int maxChainedNeighborUpdates) {
 		super(properties, registryRef, dimension, profiler, isClient, debugWorld, seed, maxChainedNeighborUpdates);
 		throw new AssertionError("nuh uh");
 	}

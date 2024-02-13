@@ -1,175 +1,117 @@
 package me.thosea.badoptimizations.mixin.entitydata;
 
-import me.thosea.badoptimizations.EntityAccessor;
+import me.thosea.badoptimizations.interfaces.EntityMethods;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Optional;
 
-@Mixin(Entity.class)
-public abstract class MixinEntity implements EntityAccessor {
+@Mixin(value = Entity.class, priority = 700)
+public abstract class MixinEntity implements EntityMethods {
+	@Shadow @Final private static TrackedData<Optional<Text>> CUSTOM_NAME;
 	@Shadow @Final protected static TrackedData<Byte> FLAGS;
-	@Shadow public World world;
+	@Shadow @Final private static TrackedData<Boolean> NAME_VISIBLE;
+	@Shadow @Final private static TrackedData<Boolean> SILENT;
+	@Shadow @Final private static TrackedData<Boolean> NO_GRAVITY;
+	@Shadow @Final protected static TrackedData<EntityPose> POSE;
+	@Shadow @Final private static TrackedData<Integer> FROZEN_TICKS;
+	@Shadow @Final private static TrackedData<Integer> AIR;
 
-	@Unique private boolean glowing;
+	@Shadow private World world;
+
+	@Unique private boolean glowingBO;
 	@Unique private boolean onFire = false;
 	@Unique private boolean sneaking = false;
 	@Unique private boolean sprinting = false;
 	@Unique private boolean swimming = false;
 	@Unique private boolean invisible = false;
-
-	@Shadow @Final private static TrackedData<Integer> AIR;
-
-	@Shadow
-	public abstract int getMaxAir();
-
-	@Unique private int remainingAirTicks = getMaxAir();
-
-	@Shadow @Final private static TrackedData<Optional<Text>> CUSTOM_NAME;
+	@Unique private boolean nameVisible = false;
+	@Unique private boolean silent = false;
+	@Unique private boolean noGravity = false;
+	@Unique	private int frozenTicks = 0;
+	@Unique private EntityPose pose = EntityPose.STANDING;
 	@Unique private Optional<Text> customName = Optional.empty();
 
-	@Shadow @Final private static TrackedData<Boolean> NAME_VISIBLE;
-	@Unique private boolean nameVisible = false;
+	@Shadow public abstract int getMaxAir();
+	@Unique private int remainingAirTicks = getMaxAir();
 
-	@Shadow @Final private static TrackedData<Boolean> SILENT;
-	@Unique private boolean silent = false;
+	@Redirect(method = "isOnFire", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getFlag(I)Z"))
+	private boolean getIsOnFire(Entity instance, int index) {
+		return onFire;
+	}
 
-	@Shadow @Final private static TrackedData<Boolean> NO_GRAVITY;
-	@Unique private boolean noGravity = false;
+	@Shadow private boolean glowing; // vanilla glowing on the server
 
-	@Shadow @Final protected static TrackedData<EntityPose> POSE;
-	@Unique private EntityPose pose = EntityPose.STANDING;
+	@Overwrite public boolean isGlowing() {return world.isClient ? glowingBO : glowing;}
+	@Overwrite public boolean isSneaking() {return sneaking;}
+	@Overwrite public boolean isSprinting() {return sprinting;}
+	@Overwrite public boolean isSwimming() {return swimming;}
+	@Overwrite public boolean isInvisible() {return invisible;}
+	@Overwrite public int getAir() {return remainingAirTicks;}
+	@Overwrite @Nullable public Text getCustomName() {return customName.orElse(null);}
+	@Overwrite public boolean hasCustomName() {return customName.isPresent();}
+	@Overwrite public boolean isCustomNameVisible() {return nameVisible;}
+	@Overwrite public boolean isSilent() {return silent;}
+	@Overwrite public boolean hasNoGravity() {return noGravity;}
+	@Overwrite public EntityPose getPose() {return pose;}
+	@Overwrite public int getFrozenTicks() {return frozenTicks;}
 
-	@Shadow @Final private static TrackedData<Integer> FROZEN_TICKS;
-
+	// getDataTracker doesn't remap properly in classes that extend this
 	@Shadow public abstract DataTracker getDataTracker();
-	@Shadow private int fireTicks;
-	@Unique	private int frozenTicks = 0;
+	@Unique protected DataTracker dataTracker;
 
-	@Inject(method = "isOnFire", at = @At("HEAD"), cancellable = true)
-	private void isOnFire(CallbackInfoReturnable<Boolean> cir) {
-		if(fireTicks > 0) {
-			cir.setReturnValue(true);
-		} else {
-			cir.setReturnValue(onFire && world.isClient);
-		}
-	}
-
-	@Inject(method = "isSneaking", at = @At("HEAD"), cancellable = true)
-	private void isSneaking(CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(sneaking);
-	}
-
-	@Inject(method = "isSprinting", at = @At("HEAD"), cancellable = true)
-	private void isSprinting(CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(sprinting);
-	}
-
-	@Inject(method = "isSwimming", at = @At("HEAD"), cancellable = true)
-	private void isSwimming(CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(swimming);
-	}
-
-	@Inject(method = "isInvisible", at = @At("HEAD"), cancellable = true)
-	private void isInvisible(CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(invisible);
-	}
-
-	@Inject(method = "isGlowing", at = @At("HEAD"), cancellable = true)
-	private void isGlowing(CallbackInfoReturnable<Boolean> cir) {
-		if(world.isClient) {
-			cir.setReturnValue(glowing);
-		}
-	}
-
-	@Inject(method = "getAir", at = @At("HEAD"), cancellable = true)
-	private void getAir(CallbackInfoReturnable<Integer> cir) {
-		cir.setReturnValue(remainingAirTicks);
-	}
-
-	@Inject(method = "getCustomName", at = @At("HEAD"), cancellable = true)
-	private void getCustomName(CallbackInfoReturnable<Text> cir) {
-		cir.setReturnValue(customName.orElse(null));
-	}
-
-	@Inject(method = "hasCustomName", at = @At("HEAD"), cancellable = true)
-	private void hasCustomName(CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(customName.isPresent());
-	}
-
-	@Inject(method = "isCustomNameVisible", at = @At("HEAD"), cancellable = true)
-	private void isCustomNameVisible(CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(nameVisible);
-	}
-
-	@Inject(method = "isSilent", at = @At("HEAD"), cancellable = true)
-	private void isSilent(CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(silent);
-	}
-
-	@Inject(method = "hasNoGravity", at = @At("HEAD"), cancellable = true)
-	private void hasNoGravity(CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(noGravity);
-	}
-
-	@Inject(method = "getPose", at = @At("HEAD"), cancellable = true)
-	private void getPose(CallbackInfoReturnable<EntityPose> cir) {
-		cir.setReturnValue(pose);
-	}
-
-	@Inject(method = "getFrozenTicks", at = @At("HEAD"), cancellable = true)
-	private void getFrozenTicks(CallbackInfoReturnable<Integer> cir) {
-		cir.setReturnValue(frozenTicks);
-	}
-
-	@Shadow
-	public abstract boolean isFireImmune();
-
-	@Unique
-	private boolean getFlag(byte flags, int index) {
-		return (flags & 1 << index) != 0;
+	@Inject(method = "<init>", at = @At("TAIL"))
+	private void afterInit(EntityType<?> type, World world, CallbackInfo ci) {
+		dataTracker = getDataTracker();
 	}
 
 	@Override
-	public void badoptimizations$refreshEntityData(TrackedData<?> data) {
-		DataTracker dataTracker = getDataTracker();
-
-		if(FLAGS.equals(data)) {
+	public void bo$refreshEntityData(int data) {
+		if(data == FLAGS.getId()) {
 			byte flags = dataTracker.get(FLAGS);
 
-			onFire = getFlag(flags, 0) && !isFireImmune();
+			onFire = getFlag(flags, 0);
 			sneaking = getFlag(flags, 1);
 			sprinting = getFlag(flags, 3);
 			swimming = getFlag(flags, 4);
 			invisible = getFlag(flags, 5);
 			if(world.isClient) {
-				glowing = getFlag(flags, 6);
+				glowingBO = getFlag(flags, 6);
 			}
-		} else if(AIR.equals(data)) {
+		} else if(data == AIR.getId()) {
 			remainingAirTicks = dataTracker.get(AIR);
-		} else if(CUSTOM_NAME.equals(data)) {
+		} else if(data == CUSTOM_NAME.getId()) {
 			customName = dataTracker.get(CUSTOM_NAME);
-		} else if(NAME_VISIBLE.equals(data)) {
+		} else if(data == NAME_VISIBLE.getId()) {
 			nameVisible = dataTracker.get(NAME_VISIBLE);
-		} else if(SILENT.equals(data)) {
+		} else if(data == SILENT.getId()) {
 			silent = dataTracker.get(SILENT);
-		} else if(NO_GRAVITY.equals(data)) {
+		} else if(data == NO_GRAVITY.getId()) {
 			noGravity = dataTracker.get(NO_GRAVITY);
-		} else if(POSE.equals(data)) {
+		} else if(data == POSE.getId()) {
 			pose = dataTracker.get(POSE);
-		} else if(FROZEN_TICKS.equals(data)) {
+		} else if(data == FROZEN_TICKS.getId()) {
 			frozenTicks = dataTracker.get(FROZEN_TICKS);
 		}
+	}
+
+	@Unique
+	private boolean getFlag(byte flags, int index) {
+		return (flags & 1 << index) != 0;
 	}
 }
