@@ -1,6 +1,6 @@
 package me.thosea.badoptimizations.mixin.tick;
 
-import me.thosea.badoptimizations.mixin.accessor.GameRendererFieldAccessor;
+import me.thosea.badoptimizations.mixin.accessor.GameRendererAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.DimensionEffects;
 import net.minecraft.client.render.LightmapTextureManager;
@@ -28,11 +28,12 @@ public abstract class MixinLightmapManager {
 	@Unique private boolean previousHasNightVision;
 
 	@Unique private float previousSkyDarkness;
-	@Unique private GameRendererFieldAccessor gameRendererAccessor;
+	@Unique private GameRendererAccessor gameRendererAccessor;
 
 	@Unique
 	private boolean isREALLYDirty() {
 		boolean result = false;
+
 		boolean hasLightning = client.world.getLightningTicksLeft() != 0;
 		if(hasLightning != previousHasLightning) {
 			previousHasLightning = hasLightning;
@@ -58,7 +59,7 @@ public abstract class MixinLightmapManager {
 		}
 
 		long time = client.world.getTimeOfDay();
-		if(Math.abs(time - previousTime) >= 100) {
+		if(Math.abs(time - previousTime) >= 80) {
 			previousTime = time;
 			result = true;
 		}
@@ -81,7 +82,7 @@ public abstract class MixinLightmapManager {
 	@Inject(method = "enable", at = @At("TAIL"))
 	private void onEnable(CallbackInfo ci) {
 		if(gameRendererAccessor == null) {
-			gameRendererAccessor = (GameRendererFieldAccessor) client.gameRenderer;
+			gameRendererAccessor = (GameRendererAccessor) client.gameRenderer;
 		}
 
 		if(client.player == null) return;
@@ -103,7 +104,6 @@ public abstract class MixinLightmapManager {
 	@Inject(method = "tick", at = @At("HEAD"), cancellable = true)
 	private void onTick(CallbackInfo ci) {
 		if(!allowUpdate) {
-			// Also prevents update from running
 			ci.cancel();
 		}
 	}
