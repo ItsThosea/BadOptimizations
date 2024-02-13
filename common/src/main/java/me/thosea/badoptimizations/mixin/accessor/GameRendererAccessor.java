@@ -1,11 +1,11 @@
 package me.thosea.badoptimizations.mixin.accessor;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.client.render.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(Entity.class)
-public interface EntityFieldAccessor {
+@Mixin(GameRenderer.class)
+public interface GameRendererAccessor {
 	@Accessor
-	boolean isInNetherPortal();
+	float getSkyDarkness();
 }
