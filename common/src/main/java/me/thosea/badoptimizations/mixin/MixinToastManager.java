@@ -14,9 +14,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
+@SuppressWarnings("Java8CollectionRemoveIf")
 @Mixin(value = ToastManager.class, priority = 800)
 public abstract class MixinToastManager {
-	// List<Entry<?>> but i dont want to use accesswidener
+	// List<Entry<?>> but i dont want to make an
+	// accesswidener just for Entry when I don't need to
 	@Shadow @Final private List<Object> visibleEntries;
 	@Shadow @Final private Deque<Toast> toastQueue;
 
