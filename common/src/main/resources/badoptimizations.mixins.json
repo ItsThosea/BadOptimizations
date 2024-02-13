@@ -5,19 +5,27 @@
   "compatibilityLevel": "JAVA_17",
   "client": [
     "MixinClient",
-    "MixinDataTracker",
     "MixinDebugHud",
-    "MixinInGameHud",
     "MixinKeyboard",
     "MixinParticleManager",
     "MixinToastManager",
-    "accessor.EntityFieldAccessor",
-    "accessor.GameRendererFieldAccessor",
+    "MixinWorldRenderer",
+    "accessor.GameRendererAccessor",
+    "debug.MixinBeeDebugRenderer",
+    "debug.MixinGameEventDebugRenderer",
+    "debug.MixinGameTestDebugRenderer",
+    "debug.MixinVillageDebugRenderer",
+    "entitydata.MixinDataTracker",
     "entitydata.MixinEntity",
     "entitydata.MixinLivingEntity",
     "entitydata.MixinPlayer",
-    "tick.MixinClientWorldCloudColor",
-    "tick.MixinClientWorldSkyColor",
+    "renderer.blockentity.MixinBlockEntityRenderDispatcher",
+    "renderer.blockentity.MixinBlockEntityType",
+    "renderer.entity.MixinClientPlayer",
+    "renderer.entity.MixinEntity",
+    "renderer.entity.MixinEntityRendererDispatcher",
+    "renderer.entity.MixinEntityType",
+    "tick.MixinClientWorld",
     "tick.MixinGameRenderer",
     "tick.MixinLightmapManager",
     "tick.MixinTutorial"
@@ -25,5 +33,5 @@
   "injectors": {
     "defaultRequire": 1
   },
-  "mixinPriority": 1200
+  "mixinPriority": 120
 }

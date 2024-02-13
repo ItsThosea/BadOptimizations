@@ -1,23 +1,22 @@
 package me.thosea.badoptimizations.mixin;
 
-import me.thosea.badoptimizations.ClientAccessor;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import me.thosea.badoptimizations.interfaces.ClientMethods;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.GlTimer;
+import net.minecraft.client.gl.GlTimer.Query;
 import net.minecraft.client.gui.hud.DebugHud;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Util;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftClient.class)
-public abstract class MixinClient implements ClientAccessor {
+public abstract class MixinClient implements ClientMethods {
 	@Shadow private static int currentFps;
 	@Shadow private int fpsCounter;
 	@Shadow private long nextDebugInfoUpdateTime;
@@ -31,18 +30,11 @@ public abstract class MixinClient implements ClientAccessor {
 	@Shadow
 	protected abstract int getFramerateLimit();
 
-	@Shadow private @Nullable GlTimer.Query currentGlTimerQuery;
-	@Shadow private long metricsSampleDuration;
-
 	@Override
-	public void badoptimizations$updateFpsString() {
-		int limit = getFramerateLimit();
-
-		if(currentGlTimerQuery != null && currentGlTimerQuery.isResultAvailable()) {
-			this.gpuUtilizationPercentage = (double) this.currentGlTimerQuery.queryResult() * 100.0 / (double) metricsSampleDuration;
-		}
-
+	public void bo$updateFpsString() {
 		StringBuilder builder = new StringBuilder(32);
+
+		int limit = getFramerateLimit();
 
 		builder.append(currentFps).append(" fps T: ");
 		builder.append(limit == 260 ? "inf" : limit);
@@ -75,19 +67,29 @@ public abstract class MixinClient implements ClientAccessor {
 		this.fpsDebugString = builder.toString();
 	}
 
-	@Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiler/Profiler;push(Ljava/lang/String;)V", ordinal = 7), cancellable = true)
-	private void onDebugHandle(boolean tick, CallbackInfo ci) {
-		ci.cancel();
+	@ModifyExpressionValue(method = "render", at = @At(value = "FIELD", ordinal = 2, target = "Lnet/minecraft/client/MinecraftClient;currentGlTimerQuery:Lnet/minecraft/client/gl/GlTimer$Query;"))
+	private Query onGetGlTimeQuery(Query original) {
+		if(original == null || !getDebugHud().shouldShowDebugHud()) {
+			return null;
+		}
 
-		while(Util.getMeasuringTimeMs() >= nextDebugInfoUpdateTime + 1000L) {
-			// Track FPS
+		return original;
+	}
+
+	@WrapOperation(method = "render", at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+	private long onGetTime(Operation<Long> original) {
+		// Identical to the vanilla loop...
+		// but w/o String.format
+		while(original.call() >= nextDebugInfoUpdateTime + 1000L) {
 			currentFps = fpsCounter;
 			nextDebugInfoUpdateTime += 1000L;
 			fpsCounter = 0;
 
 			if(getDebugHud().shouldShowDebugHud()) {
-				badoptimizations$updateFpsString();
+				bo$updateFpsString();
 			}
 		}
+
+		return 0; // Don't run the vanilla loop
 	}
 }
