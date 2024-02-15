@@ -2,6 +2,7 @@ plugins {
     id "architectury-plugin" version "3.4-SNAPSHOT"
     id "dev.architectury.loom" version "1.1-SNAPSHOT" apply false
     id "io.github.pacifistmc.forgix" version "1.2.6"
+    id "me.modmuss50.mod-publish-plugin" version "0.5.0"
 }
 
 architectury {
@@ -44,5 +45,40 @@ allprojects {
         outputDir "build/libs/merged"
         mergedJarName "BadOptimizations-${version}.jar"
         tasks.build.finalizedBy mergeJars
+    }
+}
+
+file("changelog.txt").withInputStream {
+    var str = new String(it.readAllBytes())
+    while(str.endsWith("\n")) str = str.substring(0, str.length() - 1)
+    publishMods.changelog = str
+}
+
+publishMods {
+    file = file("build/libs/merged/BadOptimizations-${rootProject.mod_version}.jar")
+    displayName = "$rootProject.mod_version (1.20.2-1.20.4)"
+
+    version = rootProject.mod_version
+    type = STABLE
+    modLoaders.add("fabric")
+    modLoaders.add("forge")
+
+    modrinth {
+        accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+        projectId = "g96Z4WVZ"
+        minecraftVersions.add("1.20.2")
+        minecraftVersions.add("1.20.3")
+        minecraftVersions.add("1.20.4")
+    }
+
+    curseforge {
+        accessToken = providers.environmentVariable("CURSEFORGE_API_KEY")
+        projectId = "949555"
+        minecraftVersions.add("1.20.2")
+        minecraftVersions.add("1.20.3")
+        minecraftVersions.add("1.20.4")
+        javaVersions.add(JavaVersion.VERSION_17)
+        javaVersions.add(JavaVersion.VERSION_18)
+        clientRequired = true
     }
 }
