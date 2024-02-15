@@ -1,0 +1,6 @@
+- Fix `@Redirect` conflicts causing crashes
+- Fix mixin priority
+- Fix sky flickering between biome borders
+- Fix sky color flickering during rain/thunder/lightning
+- Fix crashes due to `biomeColorVector` being null
+- Lightmap cacher will now only check for null game renderer once instead of multiple times per frame
