@@ -2,12 +2,15 @@ package me.thosea.badoptimizations.mixin.tick;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import me.thosea.badoptimizations.interfaces.LightmapMethods;
+import me.thosea.badoptimizations.mixin.accessor.GameRendererAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.option.Perspective;
 import net.minecraft.client.option.SimpleOption;
 import net.minecraft.client.render.BufferBuilderStorage;
 import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.resource.ResourceManager;
 import org.spongepowered.asm.mixin.Final;
@@ -20,8 +23,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GameRenderer.class)
 public final class MixinGameRenderer {
-	@Shadow @Final MinecraftClient client;
+	@Shadow @Final private MinecraftClient client;
 
+	@Shadow @Final private LightmapTextureManager lightmapTextureManager;
 	@Unique private SimpleOption<Double> fovEffectScale;
 
 	@Inject(method = "<init>", at = @At("TAIL"))
@@ -31,6 +35,10 @@ public final class MixinGameRenderer {
 	                         BufferBuilderStorage buffers,
 	                         CallbackInfo ci) {
 		fovEffectScale = client.options.getFovEffectScale();
+
+		LightmapMethods lightmap = (LightmapMethods) lightmapTextureManager;
+		GameRendererAccessor accessor = (GameRendererAccessor) (Object) this;
+		lightmap.bo$setGameRendererAccessor(accessor);
 	}
 
 	// don't do unneeded FOV calculations
