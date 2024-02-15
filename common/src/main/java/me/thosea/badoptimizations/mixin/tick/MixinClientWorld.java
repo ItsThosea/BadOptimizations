@@ -36,49 +36,76 @@ public abstract class MixinClientWorld extends World {
 	@Unique private int previousBiomeColor;
 	@Unique private Vec3d biomeColorVector;
 
-	@Unique private Vec3d previousCameraPos;
-
 	@Unique private float previousRainGradient;
+	@Unique private float rainGradientMultiplier;
+
 	@Unique private float previousThunderGradient;
+	@Unique private float thunderGradientMultiplier;
+
 	@Unique private int previousLightningTicks;
 
+	@Inject(method = "getSkyColor", at = @At("HEAD"), cancellable = true)
+	private void onGetColorHead(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
+		if(skyColorCache == null) return;
+
+		int tick = client.player.age;
+
+		if(lastTick != tick) {
+			lastTick = tick;
+
+			boolean doMiniUpdate = false;
+
+			float rainGradient = this.rainGradient; // protected in World
+			if(previousRainGradient != rainGradient) {
+				previousRainGradient = rainGradient;
+				doMiniUpdate = true;
+				if(rainGradient > 0) {
+					rainGradientMultiplier = 1.0f - rainGradient * 0.75F;
+				}
+			}
+
+			float thunderGradient = this.thunderGradient; // protected in World
+			if(previousThunderGradient != thunderGradient) {
+				previousThunderGradient = thunderGradient;
+				doMiniUpdate = true;
+				if(thunderGradient > 0) {
+					thunderGradientMultiplier = 1.0f - thunderGradient * 0.75F;
+				}
+			}
+
+			int lightningTicks = getLightningTicks(); // our own method
+			if(previousLightningTicks != lightningTicks) {
+				doMiniUpdate = true;
+				previousLightningTicks = lightningTicks;
+			}
+
+			if(isBiomeDirty(cameraPos.subtract(2.0, 2.0, 2.0).multiply(0.25))) {
+				return;
+			} else {
+				long time = getTimeOfDay(); // public World method
+				if(doMiniUpdate || Math.abs(time - previousTime) >= 3) {
+					previousTime = time;
+					calcSkyColor(tickDelta);
+				}
+			}
+		}
+
+		cir.setReturnValue(skyColorCache);
+	}
+
+	@Shadow private int lightningTicksLeft;
+
 	@Unique
-	private boolean isSkyColorDirty(Vec3d pos) {
-		boolean result = false;
-
-		if(isBiomeDirty(pos)) {
-			result = true;
+	private int getLightningTicks() {
+		if(client.options.getHideLightningFlashes().getValue()) {
+			return 0;
+		} else {
+			return this.lightningTicksLeft;
 		}
-
-		float rainGradient = this.rainGradient; // protected in World
-		if(previousRainGradient != rainGradient) {
-			previousRainGradient = rainGradient;
-			result = true;
-		}
-
-		float thunderGradient = this.thunderGradient; // protected in World
-		if(previousThunderGradient != thunderGradient) {
-			previousThunderGradient = thunderGradient;
-			result = true;
-		}
-
-		int lightningTicks = getLightningTicksLeft(); // shadow method
-		if(previousLightningTicks != lightningTicks) {
-			previousLightningTicks = lightningTicks;
-			result = true;
-		}
-
-		return result;
 	}
 
 	@Unique
 	private boolean isBiomeDirty(Vec3d pos) {
-		if(pos.squaredDistanceTo(previousCameraPos) < (0.23 * 0.23)) {
-			return false;
-		} else {
-			previousCameraPos = pos;
-		}
-
 		int x = MathHelper.floor(pos.x);
 		int y = MathHelper.floor(pos.y);
 		int z = MathHelper.floor(pos.z);
@@ -99,33 +126,8 @@ public abstract class MixinClientWorld extends World {
 	@Shadow public abstract int getLightningTicksLeft();
 	@Shadow public abstract Vec3d getSkyColor(Vec3d cameraPos, float tickDelta);
 
-	@Inject(method = "getSkyColor", at = @At("HEAD"), cancellable = true)
-	private void onGetColorHead(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
-		if(skyColorCache == null) return;
-
-		int tick = client.player.age;
-
-		if(lastTick != tick) {
-			lastTick = tick;
-
-			cameraPos = cameraPos.subtract(2.0, 2.0, 2.0).multiply(0.25);
-
-			if(isSkyColorDirty(cameraPos)) {
-				return;
-			} else {
-				long time = getTimeOfDay(); // public World method
-				if(Math.abs(time - previousTime) >= 3) {
-					previousTime = time;
-					calcSkyColor();
-				}
-			}
-		}
-
-		cir.setReturnValue(skyColorCache);
-	}
-
 	@Unique
-	private void calcSkyColor() {
+	private void calcSkyColor(float delta) {
 		double x = 0;
 		double y = 0;
 		double z = 0;
@@ -136,15 +138,41 @@ public abstract class MixinClientWorld extends World {
 			z += biomeColorVector.z * multiplier;
 		}
 
-		double multiplier = 1.0 / 4096;
+		float angle = MathHelper.cos(getSkyAngle(1.0f) * 6.2831855F) * 2.0F + 0.5F;
+		angle = MathHelper.clamp(angle, 0.0F, 1.0F);
+		double multiplier = (1.0 / 4096) * angle;
+
 		x *= multiplier;
 		y *= multiplier;
 		z *= multiplier;
 
-		float angle = MathHelper.cos(getSkyAngle(1.0f) * 6.2831855F) * 2.0F + 0.5F;
-		angle = MathHelper.clamp(angle, 0.0F, 1.0F);
+		if(rainGradient > 0.0f) {
+			double color = (x * 0.3F + y * 0.59F + z * 0.11F) * 0.6F;
 
-		skyColorCache = new Vec3d(x * angle, y * angle, z * angle);
+			x = x * rainGradientMultiplier + color * (1.0 - rainGradientMultiplier);
+			y = y * rainGradientMultiplier + color * (1.0 - rainGradientMultiplier);
+			z = z * rainGradientMultiplier + color * (1.0 - rainGradientMultiplier);
+		}
+		if(thunderGradient > 0.0f) {
+			double color = (x * 0.3F + y * 0.59F + z * 0.11F) * 0.2F;
+
+			x = x * thunderGradientMultiplier + color * (1.0 - thunderGradientMultiplier);
+			y = y * thunderGradientMultiplier + color * (1.0 - thunderGradientMultiplier);
+			z = z * thunderGradientMultiplier + color * (1.0 - thunderGradientMultiplier);
+		}
+		if(previousLightningTicks > 0) {
+			float lightningMultiplier = previousLightningTicks - delta;
+			if(lightningMultiplier > 1.0F) {
+				lightningMultiplier = 1.0F;
+			}
+
+			lightningMultiplier *= 0.45F;
+			x = x * (1.0F - lightningMultiplier) + 0.8F * lightningMultiplier;
+			y = y * (1.0F - lightningMultiplier) + 0.8F * lightningMultiplier;
+			z = z * (1.0F - lightningMultiplier) + lightningMultiplier;
+		}
+
+		skyColorCache = new Vec3d(x, y, z);
 	}
 
 	@Inject(method = "getSkyColor", at = @At("RETURN"))
@@ -155,7 +183,8 @@ public abstract class MixinClientWorld extends World {
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void afterInit(CallbackInfo ci) {
 		lastTick = -1;
-		previousCameraPos = new Vec3d(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE);
+		previousBiomeColor = Integer.MIN_VALUE;
+		biomeColorVector = Vec3d.ZERO;
 		biomeColors = BiomeSkyColorGetter.of(getBiomeAccess());
 	}
 
