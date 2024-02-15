@@ -1,5 +1,6 @@
 package me.thosea.badoptimizations.mixin.tick;
 
+import me.thosea.badoptimizations.interfaces.LightmapMethods;
 import me.thosea.badoptimizations.mixin.accessor.GameRendererAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.DimensionEffects;
@@ -14,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LightmapTextureManager.class)
-public abstract class MixinLightmapManager {
+public abstract class MixinLightmapManager implements LightmapMethods {
 	@Shadow @Final private MinecraftClient client;
 
 	@Unique private boolean allowUpdate = false;
@@ -29,6 +30,11 @@ public abstract class MixinLightmapManager {
 
 	@Unique private float previousSkyDarkness;
 	@Unique private GameRendererAccessor gameRendererAccessor;
+
+	@Override
+	public void bo$setGameRendererAccessor(GameRendererAccessor gameRendererAccessor) {
+		this.gameRendererAccessor = gameRendererAccessor;
+	}
 
 	@Unique
 	private boolean isREALLYDirty() {
@@ -81,10 +87,6 @@ public abstract class MixinLightmapManager {
 
 	@Inject(method = "enable", at = @At("TAIL"))
 	private void onEnable(CallbackInfo ci) {
-		if(gameRendererAccessor == null) {
-			gameRendererAccessor = (GameRendererAccessor) client.gameRenderer;
-		}
-
 		if(client.player == null) return;
 
 		int tick = client.player.age;
