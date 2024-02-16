@@ -6,10 +6,11 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import me.thosea.badoptimizations.interfaces.ClientMethods;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.GlTimer.Query;
-import net.minecraft.client.gui.hud.DebugHud;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,9 +25,8 @@ public abstract class MixinClient implements ClientMethods {
 	@Shadow @Final public GameOptions options;
 	@Shadow public String fpsDebugString;
 	@Shadow private double gpuUtilizationPercentage;
+	@Shadow @Nullable public Screen currentScreen;
 
-	@Shadow
-	public abstract DebugHud getDebugHud();
 	@Shadow
 	protected abstract int getFramerateLimit();
 
@@ -67,9 +67,14 @@ public abstract class MixinClient implements ClientMethods {
 		this.fpsDebugString = builder.toString();
 	}
 
+	@Override
+	public boolean bo$showDebugScreen() {
+		return options.debugEnabled && (!options.hudHidden || currentScreen != null);
+	}
+
 	@ModifyExpressionValue(method = "render", at = @At(value = "FIELD", ordinal = 2, target = "Lnet/minecraft/client/MinecraftClient;currentGlTimerQuery:Lnet/minecraft/client/gl/GlTimer$Query;"))
 	private Query onGetGlTimeQuery(Query original) {
-		if(original == null || !getDebugHud().shouldShowDebugHud()) {
+		if(original == null || !bo$showDebugScreen()) {
 			return null;
 		}
 
@@ -85,7 +90,7 @@ public abstract class MixinClient implements ClientMethods {
 			nextDebugInfoUpdateTime += 1000L;
 			fpsCounter = 0;
 
-			if(getDebugHud().shouldShowDebugHud()) {
+			if(bo$showDebugScreen()) {
 				bo$updateFpsString();
 			}
 		}

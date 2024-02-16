@@ -2,8 +2,8 @@ package me.thosea.badoptimizations.mixin.debug;
 
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.debug.BeeDebugRenderer;
+import net.minecraft.client.render.debug.BeeDebugRenderer.Bee;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.network.packet.s2c.custom.DebugBeeCustomPayload.Bee;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
