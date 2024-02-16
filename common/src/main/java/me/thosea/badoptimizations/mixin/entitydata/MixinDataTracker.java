@@ -27,8 +27,8 @@ public abstract class MixinDataTracker {
 	@Shadow @Final @Mutable private ReadWriteLock lock;
 	@Unique private EntityMethods entityMethods;
 
-	@Inject(method = "set(Lnet/minecraft/entity/data/TrackedData;Ljava/lang/Object;Z)V", at = @At(value = "INVOKE", shift = Shift.AFTER, target = "Lnet/minecraft/entity/data/DataTracker$Entry;set(Ljava/lang/Object;)V"))
-	private void onDataSet(TrackedData<?> key, Object value, boolean force, CallbackInfo ci) {
+	@Inject(method = "set", at = @At(value = "INVOKE", shift = Shift.AFTER, target = "Lnet/minecraft/entity/data/DataTracker$Entry;set(Ljava/lang/Object;)V"))
+	private void onDataSet(TrackedData<?> key, Object value, CallbackInfo ci) {
 		entityMethods.bo$refreshEntityData(key.getId());
 	}
 
