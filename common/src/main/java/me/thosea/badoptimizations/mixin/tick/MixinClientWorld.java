@@ -1,6 +1,7 @@
 package me.thosea.badoptimizations.mixin.tick;
 
 import me.thosea.badoptimizations.interfaces.BiomeSkyColorGetter;
+import me.thosea.badoptimizations.other.Config;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.registry.DynamicRegistryManager;
@@ -80,10 +81,11 @@ public abstract class MixinClientWorld extends World {
 			}
 
 			if(isBiomeDirty(cameraPos.subtract(2.0, 2.0, 2.0).multiply(0.25))) {
+				// Do vanilla behavior, so surrounding biomes are factored in
 				return;
 			} else {
 				long time = getTimeOfDay(); // public World method
-				if(doMiniUpdate || Math.abs(time - previousTime) >= 3) {
+				if(doMiniUpdate || Math.abs(time - previousTime) >= Config.skycolor_time_change_needed_for_update) {
 					previousTime = time;
 					calcSkyColor(tickDelta);
 				}
@@ -102,7 +104,7 @@ public abstract class MixinClientWorld extends World {
 		int color = biomeColors.get(x, y, z);
 		if(previousBiomeColor != color) {
 			previousBiomeColor = color;
-			biomeColorVector = Vec3d.unpackRgb(color);
+			biomeColorVector = Vec3d.unpackRgb(color).multiply(4096);
 			return true;
 		} else if(biomeColors.get(x - 2, y - 2, z - 2) != color
 				|| biomeColors.get(x + 3, y + 3, z + 3) != color) {
@@ -117,23 +119,13 @@ public abstract class MixinClientWorld extends World {
 
 	@Unique
 	private void calcSkyColor(float delta) {
-		double x = 0;
-		double y = 0;
-		double z = 0;
-
-		for(double multiplier : BiomeSkyColorGetter.MULTIPLIERS) {
-			x += biomeColorVector.x * multiplier;
-			y += biomeColorVector.y * multiplier;
-			z += biomeColorVector.z * multiplier;
-		}
-
 		float angle = MathHelper.cos(getSkyAngle(1.0f) * 6.2831855F) * 2.0F + 0.5F;
 		angle = MathHelper.clamp(angle, 0.0F, 1.0F);
 		double multiplier = (1.0 / 4096) * angle;
 
-		x *= multiplier;
-		y *= multiplier;
-		z *= multiplier;
+		double x = biomeColorVector.x * multiplier;
+		double y = biomeColorVector.y * multiplier;
+		double z = biomeColorVector.z * multiplier;
 
 		if(rainGradient > 0.0f) {
 			double color = (x * 0.3F + y * 0.59F + z * 0.11F) * 0.6F;

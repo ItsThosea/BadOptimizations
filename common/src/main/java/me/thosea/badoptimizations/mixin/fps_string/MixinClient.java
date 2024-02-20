@@ -1,4 +1,4 @@
-package me.thosea.badoptimizations.mixin;
+package me.thosea.badoptimizations.mixin.fps_string;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
