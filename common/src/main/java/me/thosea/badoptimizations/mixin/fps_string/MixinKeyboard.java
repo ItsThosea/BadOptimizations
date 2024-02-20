@@ -1,4 +1,4 @@
-package me.thosea.badoptimizations.mixin;
+package me.thosea.badoptimizations.mixin.fps_string;
 
 import me.thosea.badoptimizations.interfaces.ClientMethods;
 import net.minecraft.client.Keyboard;
