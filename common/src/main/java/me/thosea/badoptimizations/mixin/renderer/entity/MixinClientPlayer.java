@@ -1,6 +1,5 @@
 package me.thosea.badoptimizations.mixin.renderer.entity;
 
-import me.thosea.badoptimizations.mixin.entitydata.MixinEntity;
 import me.thosea.badoptimizations.other.PlayerModelRendererHolder;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.EntityRenderer;
@@ -8,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(AbstractClientPlayerEntity.class)
-public abstract class MixinClientPlayer extends MixinEntity {
+public abstract class MixinClientPlayer extends MixinEntity { // renderer.MixinEntity
 	@Shadow public abstract String getModel();
 
 	@Override

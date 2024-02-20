@@ -1,9 +1,10 @@
 package me.thosea.badoptimizations.mixin.tick;
 
-import me.thosea.badoptimizations.interfaces.LightmapMethods;
 import me.thosea.badoptimizations.mixin.accessor.GameRendererAccessor;
+import me.thosea.badoptimizations.other.Config;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.DimensionEffects;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.entity.effect.StatusEffects;
 import org.spongepowered.asm.mixin.Final;
@@ -15,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LightmapTextureManager.class)
-public abstract class MixinLightmapManager implements LightmapMethods {
+public abstract class MixinLightmapManager {
 	@Shadow @Final private MinecraftClient client;
 
 	@Unique private boolean allowUpdate = false;
@@ -31,9 +32,9 @@ public abstract class MixinLightmapManager implements LightmapMethods {
 	@Unique private float previousSkyDarkness;
 	@Unique private GameRendererAccessor gameRendererAccessor;
 
-	@Override
-	public void bo$setGameRendererAccessor(GameRendererAccessor gameRendererAccessor) {
-		this.gameRendererAccessor = gameRendererAccessor;
+	@Inject(method = "<init>", at = @At("TAIL"))
+	private void onInit(GameRenderer renderer, MinecraftClient client, CallbackInfo ci) {
+		this.gameRendererAccessor = (GameRendererAccessor) renderer;
 	}
 
 	@Unique
@@ -65,7 +66,7 @@ public abstract class MixinLightmapManager implements LightmapMethods {
 		}
 
 		long time = client.world.getTimeOfDay();
-		if(Math.abs(time - previousTime) >= 80) {
+		if(Math.abs(time - previousTime) >= Config.lightmap_time_change_needed_for_update) {
 			previousTime = time;
 			result = true;
 		}
