@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.thosea.badoptimizations.mixin.fabric",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "MixinClient_ShowInvalidConfig"
+  ]
+}
