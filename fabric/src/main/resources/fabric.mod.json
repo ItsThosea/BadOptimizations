@@ -10,7 +10,8 @@
   "contact": {},
   "environment": "client",
   "mixins": [
-    "badoptimizations.mixins.json"
+    "badoptimizations.mixins-common.json",
+    "badoptimizations.mixins-fabric.json"
   ],
   "depends": {
     "minecraft": "1.19.3"

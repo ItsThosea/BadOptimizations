@@ -3,7 +3,6 @@ package me.thosea.badoptimizations.mixin.entitydata;
 import me.thosea.badoptimizations.interfaces.EntityMethods;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.text.Text;
@@ -15,9 +14,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Optional;
 
@@ -32,7 +29,7 @@ public abstract class MixinEntity implements EntityMethods {
 	@Shadow @Final private static TrackedData<Integer> FROZEN_TICKS;
 	@Shadow @Final private static TrackedData<Integer> AIR;
 
-	@Shadow private World world;
+	@Shadow public World world;
 
 	@Unique private boolean glowingBO;
 	@Unique private boolean onFire = false;
@@ -46,9 +43,9 @@ public abstract class MixinEntity implements EntityMethods {
 	@Unique	private int frozenTicks = 0;
 	@Unique private EntityPose pose = EntityPose.STANDING;
 	@Unique private Optional<Text> customName = Optional.empty();
+	@Unique private int remainingAirTicks = getMaxAir();
 
 	@Shadow public abstract int getMaxAir();
-	@Unique private int remainingAirTicks = getMaxAir();
 
 	@Redirect(method = "isOnFire", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getFlag(I)Z"))
 	private boolean getIsOnFire(Entity instance, int index) {
@@ -71,14 +68,7 @@ public abstract class MixinEntity implements EntityMethods {
 	@Overwrite public EntityPose getPose() {return pose;}
 	@Overwrite public int getFrozenTicks() {return frozenTicks;}
 
-	// getDataTracker doesn't remap properly in classes that extend this
-	@Shadow public abstract DataTracker getDataTracker();
-	@Unique protected DataTracker dataTracker;
-
-	@Inject(method = "<init>", at = @At("TAIL"))
-	private void afterInit(EntityType<?> type, World world, CallbackInfo ci) {
-		dataTracker = getDataTracker();
-	}
+	@Shadow @Final protected DataTracker dataTracker;
 
 	@Override
 	public void bo$refreshEntityData(int data) {
