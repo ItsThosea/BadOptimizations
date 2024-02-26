@@ -22,7 +22,8 @@ dependencies {
     implementation(include("io.github.llamalad7:mixinextras-forge:0.3.2"))
 }
 
-loom.forge.mixinConfig("badoptimizations.mixins.json")
+loom.forge.mixinConfig("badoptimizations.mixins-common.json")
+loom.forge.mixinConfig("badoptimizations.mixins-forge.json")
 
 processResources {
     inputs.property "version", project.version

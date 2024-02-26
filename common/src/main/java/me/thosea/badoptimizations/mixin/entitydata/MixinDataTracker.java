@@ -62,6 +62,7 @@ public abstract class MixinDataTracker {
 			@NotNull @Override
 			public Lock writeLock() {return lock;}
 		};
+
 		this.entityMethods = (EntityMethods) trackedEntity;
 	}
 }
