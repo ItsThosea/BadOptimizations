@@ -1,6 +1,6 @@
-- Fix `@Redirect` conflicts causing crashes
-- Fix mixin priority
-- Fix sky flickering between biome borders
-- Fix sky color flickering during rain/thunder/lightning
-- Fix crashes due to `biomeColorVector` being null
-- Lightmap cacher will now only check for null game renderer once instead of multiple times per frame
+- Add a config file where you can enable/disable certain optimizations
+- Add a more slightly more efficient sky color calculation
+- Remove (most of the) toast optimizations
+- Fix crashes caused by data tracker optimizations
+- Fix compatibility with Immersive Portals
+- Thanks to [@tinygames](https://github.com/TinyGamesCoding/) for helping test!
