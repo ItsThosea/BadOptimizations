@@ -3,3 +3,4 @@
 - New config options: `log_config` and `ignore_mod_incompatibilities`
 - Some optimizations are now auto-disabled with certain mods (e.g. entity render caching w/ Twilight Forest), you can override this with `ignore_mod_incompatibilities`.
 - Add support for Minecraft 1.20.5
+- (1.20.2+) Add NeoForge support

@@ -5,5 +5,7 @@ dependencies {
 }
 
 architectury {
-    common("fabric", "forge")
+    common(["fabric", "neoforge"]) {
+        it.platformPackage "neoforge", "forge"
+    }
 }
