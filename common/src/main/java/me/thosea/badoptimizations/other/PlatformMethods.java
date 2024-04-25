@@ -16,4 +16,9 @@ public final class PlatformMethods {
 	public static File getConfigFolder() {
 		throw new AssertionError();
 	}
+
+	@ExpectPlatform
+	public static boolean isModLoaded(String id) {
+		throw new AssertionError();
+	}
 }
