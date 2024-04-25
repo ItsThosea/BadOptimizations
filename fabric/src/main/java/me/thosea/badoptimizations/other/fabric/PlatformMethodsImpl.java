@@ -16,4 +16,8 @@ public final class PlatformMethodsImpl {
 	public static File getConfigFolder() {
 		return FabricLoader.getInstance().getConfigDir().toFile();
 	}
+
+	public static boolean isModLoaded(String id) {
+		return FabricLoader.getInstance().isModLoaded(id);
+	}
 }

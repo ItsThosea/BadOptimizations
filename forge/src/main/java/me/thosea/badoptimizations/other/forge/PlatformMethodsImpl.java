@@ -2,6 +2,7 @@ package me.thosea.badoptimizations.other.forge;
 
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.fml.loading.LoadingModList;
 
 import java.io.File;
 
@@ -16,5 +17,9 @@ public final class PlatformMethodsImpl {
 
 	public static File getConfigFolder() {
 		return FMLPaths.CONFIGDIR.get().toFile();
+	}
+
+	public static boolean isModLoaded(String id) {
+		return LoadingModList.get().getModFileById(id) != null;
 	}
 }
