@@ -47,7 +47,7 @@ public abstract class MixinClientWorld extends World {
 
 	@Inject(method = "getSkyColor", at = @At("HEAD"), cancellable = true)
 	private void onGetColorHead(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
-		if(skyColorCache == null) return;
+		if(skyColorCache == null || client.player == null) return;
 
 		int tick = client.player.age;
 
@@ -56,21 +56,25 @@ public abstract class MixinClientWorld extends World {
 
 			boolean doMiniUpdate = false;
 
-			float rainGradient = this.rainGradient; // protected in World
+			float rainGradient = this.getRainGradient(tickDelta);
 			if(previousRainGradient != rainGradient) {
 				previousRainGradient = rainGradient;
 				doMiniUpdate = true;
 				if(rainGradient > 0) {
 					rainGradientMultiplier = 1.0f - rainGradient * 0.75F;
+				} else {
+					rainGradientMultiplier = 0;
 				}
 			}
 
-			float thunderGradient = this.thunderGradient; // protected in World
+			float thunderGradient = this.getThunderGradient(tickDelta);
 			if(previousThunderGradient != thunderGradient) {
 				previousThunderGradient = thunderGradient;
 				doMiniUpdate = true;
 				if(thunderGradient > 0) {
 					thunderGradientMultiplier = 1.0f - thunderGradient * 0.75F;
+				} else {
+					thunderGradientMultiplier = 0;
 				}
 			}
 
@@ -112,13 +116,12 @@ public abstract class MixinClientWorld extends World {
 		int y = MathHelper.floor(pos.y);
 		int z = MathHelper.floor(pos.z);
 
-		int color = biomeColors.get(x, y, z);
+		int color = biomeColors.get(x - 2, y - 2, z - 2);
 		if(previousBiomeColor != color) {
 			previousBiomeColor = color;
-			biomeColorVector = Vec3d.unpackRgb(color).multiply(4096);
+			biomeColorVector = Vec3d.unpackRgb(color);
 			return true;
-		} else if(biomeColors.get(x - 2, y - 2, z - 2) != color
-				|| biomeColors.get(x + 3, y + 3, z + 3) != color) {
+		} else if(biomeColors.get(x + 3, y + 3, z + 3) != color) {
 			return true;
 		}
 
@@ -132,20 +135,19 @@ public abstract class MixinClientWorld extends World {
 	private void calcSkyColor(float delta) {
 		float angle = MathHelper.cos(getSkyAngle(1.0f) * 6.2831855F) * 2.0F + 0.5F;
 		angle = MathHelper.clamp(angle, 0.0F, 1.0F);
-		double multiplier = (1.0 / 4096) * angle;
 
-		double x = biomeColorVector.x * multiplier;
-		double y = biomeColorVector.y * multiplier;
-		double z = biomeColorVector.z * multiplier;
+		double x = biomeColorVector.x * angle;
+		double y = biomeColorVector.y * angle;
+		double z = biomeColorVector.z * angle;
 
-		if(rainGradient > 0.0f) {
+		if(rainGradientMultiplier > 0.0f) {
 			double color = (x * 0.3F + y * 0.59F + z * 0.11F) * 0.6F;
 
 			x = x * rainGradientMultiplier + color * (1.0 - rainGradientMultiplier);
 			y = y * rainGradientMultiplier + color * (1.0 - rainGradientMultiplier);
 			z = z * rainGradientMultiplier + color * (1.0 - rainGradientMultiplier);
 		}
-		if(thunderGradient > 0.0f) {
+		if(thunderGradientMultiplier > 0.0f) {
 			double color = (x * 0.3F + y * 0.59F + z * 0.11F) * 0.2F;
 
 			x = x * thunderGradientMultiplier + color * (1.0 - thunderGradientMultiplier);
