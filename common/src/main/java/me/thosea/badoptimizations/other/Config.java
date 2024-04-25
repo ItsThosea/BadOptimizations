@@ -16,7 +16,7 @@ public final class Config {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger("BadOptimizations");
 	public static final File FILE = new File(PlatformMethods.getConfigFolder(), "badoptimizations.txt");
-	public static final int CONFIG_VER = 1;
+	public static final int CONFIG_VER = 2;
 
 	@Nullable
 	public static String error;
@@ -39,6 +39,8 @@ public final class Config {
 	public static boolean enable_remove_tutorial_if_not_demo = true;
 
 	public static boolean show_f3_text = true;
+	public static boolean ignore_mod_incompatibilities = false;
+	public static boolean log_config = true;
 
 	public static void load() {
 		if(FILE.exists()) {
@@ -58,7 +60,7 @@ public final class Config {
 			LOGGER.info("Creating config file version {} at {}", CONFIG_VER, FILE);
 
 			try {
-				writeDefaultConfig();
+				writeConfig();
 			} catch(Exception e) {
 				error = "BadOptimizations failed to write the default config."
 						+ "\nRead the game log for details.";
@@ -68,7 +70,6 @@ public final class Config {
 	}
 
 	private static void loadConfig() throws Exception {
-		// TODO switch to apache commons configuration when new options are added
 		Properties prop = new Properties();
 
 		try(FileInputStream stream = new FileInputStream(FILE)) {
@@ -80,8 +81,7 @@ public final class Config {
 			LOGGER.warn("Config version is newer than supported, this may cause issues" +
 					" (supported: {}, found: {})", CONFIG_VER, ver);
 		} else if(ver < CONFIG_VER) {
-			// Nothing for now.
-			LOGGER.warn("Upgrading config from version {} to supported version {}", ver, CONFIG_VER);
+			LOGGER.info("Upgrading config from version {} to supported version {}", ver, CONFIG_VER);
 		} else {
 			LOGGER.info("Config version: {}", CONFIG_VER);
 		}
@@ -105,6 +105,34 @@ public final class Config {
 		enable_remove_tutorial_if_not_demo = bool(prop, "enable_remove_tutorial_if_not_demo");
 
 		show_f3_text = bool(prop, "show_f3_text");
+
+		if(ver < 2) {
+			// Now that we've loaded things from the old config version,
+			// re-write the file with the new option's defaults.
+			writeConfig();
+			loadConfig();
+			return;
+		}
+
+		// Config version 2 (v2.1.1)
+		ignore_mod_incompatibilities = bool(prop, "ignore_mod_incompatibilities");
+		log_config = bool(prop, "log_config");
+
+
+		if(log_config) {
+			LOGGER.info("BadOptimizations config dump:");
+			prop.forEach((key, value) -> {
+				LOGGER.info("{}: {}", key, value);
+			});
+		}
+
+		if(!ignore_mod_incompatibilities) {
+			//noinspection ConstantValue
+			if(enable_entity_renderer_caching && PlatformMethods.isModLoaded("twilightforest")) {
+				LOGGER.warn("Disabled entity_renderer_caching because Twilight Forest is present.");
+				enable_entity_renderer_caching = false;
+			}
+		}
 	}
 
 	private static boolean bool(Properties prop, String name) throws Exception {
@@ -145,7 +173,7 @@ public final class Config {
 		return result;
 	}
 
-	private static void writeDefaultConfig() throws Exception {
+	private static void writeConfig() throws Exception {
 		File parent = FILE.getParentFile();
 		if(!parent.exists()) {
 			if(!parent.mkdirs()) {
@@ -213,9 +241,24 @@ public final class Config {
 						# Don't tick the tutorial if the game is not in demo mode.
 						enable_remove_tutorial_if_not_demo: %s
 						
+						#
+						# Other
+						#
+						
 						# Whether BadOptimizations <version> should be added onto
 						# the left text of the F3 menu.
 						show_f3_text: %s
+						
+						# Some config options will be force-disabled if certain mods are present
+						# due to incompatibilities (e.g. entity rendering caching
+						# is disabled w/ Twilight Forest).
+						# However, if you still want to use the optimizations, you can override it
+						# by setting this to true. Beware of crashes. And Herobrine.
+						ignore_mod_incompatibilities: %s
+						
+						# Whether to log the entire config into console when booting up.
+						# If you plan on reporting an issue, please keep this on.
+						log_config: %s
 						
 						# Do not change this
 						config_version: %s
@@ -235,6 +278,8 @@ public final class Config {
 						enable_remove_redundant_fov_calculations,
 						enable_remove_tutorial_if_not_demo,
 						show_f3_text,
+						ignore_mod_incompatibilities,
+						log_config,
 						CONFIG_VER
 				);
 
