@@ -1,6 +1,5 @@
-- Add a config file where you can enable/disable certain optimizations
-- Add a more slightly more efficient sky color calculation
-- Remove (most of the) toast optimizations
-- Fix crashes caused by data tracker optimizations
-- Fix compatibility with Immersive Portals
-- Thanks to [@tinygames](https://github.com/TinyGamesCoding/) for helping test!
+**This is the final supported release for 1.19.3/1.19.4! See https://github.com/ItsThosea/BadOptimizations/issues/55.**
+- Fix issues with incorrect sky color
+- New config options: `log_config` and `ignore_mod_incompatibilities`
+- Some optimizations are now auto-disabled with certain mods (e.g. entity render caching w/ Twilight Forest), you can override this with `ignore_mod_incompatibilities`.
+- Add support for Minecraft 1.20.5
