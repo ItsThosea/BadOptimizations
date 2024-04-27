@@ -1,5 +1,7 @@
-**This is the final supported release for 1.19.3/1.19.4! See https://github.com/ItsThosea/BadOptimizations/issues/55.**
+**This is the final supported release for 1.19.3/1.19.4! See https://github.com/ItsThosea/BadOptimizations/issues/55**.
 - Fix issues with incorrect sky color
 - New config options: `log_config` and `ignore_mod_incompatibilities`
 - Some optimizations are now auto-disabled with certain mods (e.g. entity render caching w/ Twilight Forest), you can override this with `ignore_mod_incompatibilities`.
+- Add NeoForge support
 - Add support for Minecraft 1.20.5
+    - Entity data optimizations have no effect on 1.20.5+ (they are in vanilla now)
