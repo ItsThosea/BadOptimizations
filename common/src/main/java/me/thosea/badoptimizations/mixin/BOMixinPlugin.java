@@ -39,8 +39,6 @@ public class BOMixinPlugin implements IMixinConfigPlugin {
 			return Config.enable_entity_renderer_caching;
 		} else if(mixin.startsWith("renderer.blockentity.")) {
 			return Config.enable_block_entity_renderer_caching;
-		} else if(mixin.startsWith("entitydata.")) {
-			return Config.enable_entity_flag_caching;
 		} else if(mixin.equals("tick.MixinGameRenderer")) {
 			return Config.enable_remove_redundant_fov_calculations;
 		} else if(mixin.equals("tick.MixinTutorial")) {

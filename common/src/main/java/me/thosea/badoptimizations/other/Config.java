@@ -34,7 +34,6 @@ public final class Config {
 	public static boolean enable_sky_angle_caching_in_worldrenderer = true;
 	public static boolean enable_entity_renderer_caching = true;
 	public static boolean enable_block_entity_renderer_caching = true;
-	public static boolean enable_entity_flag_caching = true;
 	public static boolean enable_remove_redundant_fov_calculations = true;
 	public static boolean enable_remove_tutorial_if_not_demo = true;
 
@@ -100,7 +99,6 @@ public final class Config {
 		enable_sky_angle_caching_in_worldrenderer = bool(prop, "enable_sky_angle_caching_in_worldrenderer");
 		enable_entity_renderer_caching = bool(prop, "enable_entity_renderer_caching");
 		enable_block_entity_renderer_caching = bool(prop, "enable_block_entity_renderer_caching");
-		enable_entity_flag_caching = bool(prop, "enable_entity_flag_caching");
 		enable_remove_redundant_fov_calculations = bool(prop, "enable_remove_redundant_fov_calculations");
 		enable_remove_tutorial_if_not_demo = bool(prop, "enable_remove_tutorial_if_not_demo");
 
@@ -124,6 +122,10 @@ public final class Config {
 			prop.forEach((key, value) -> {
 				LOGGER.info("{}: {}", key, value);
 			});
+		}
+
+		if(Boolean.parseBoolean(prop.getProperty("enable_entity_flag_caching"))) {
+			LOGGER.info("Note: Entity flag caching has no effect in Minecraft 1.20.5+ as the optimization is now in vanilla.");
 		}
 
 		if(!ignore_mod_incompatibilities) {
@@ -230,10 +232,10 @@ public final class Config {
 						# Whether block entity renderers should be stored in BlockEntityType
 						# instead of a HashMap.
 						enable_block_entity_renderer_caching: %s
-						# Whether entity flags should be cached instead of
-						# calling DataTracker.
+						# Whether entity flags should be cached instead of calling DataTracker.
 						# Also removes the unnecessary thread lock in DataTracker
 						# however this is also done by Lithium (they don't conflict, however).
+						# This has no effect in 1.20.5+!
 						enable_entity_flag_caching: %s
 						# Whether we should avoid calling FOV calculations
 						# if the FOV effect scale is zero.
@@ -274,7 +276,7 @@ public final class Config {
 						enable_sky_angle_caching_in_worldrenderer,
 						enable_entity_renderer_caching,
 						enable_block_entity_renderer_caching,
-						enable_entity_flag_caching,
+						true, // enable_entity_flag_caching
 						enable_remove_redundant_fov_calculations,
 						enable_remove_tutorial_if_not_demo,
 						show_f3_text,
