@@ -16,7 +16,7 @@ public final class Config {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger("BadOptimizations");
 	public static final File FILE = new File(PlatformMethods.getConfigFolder(), "badoptimizations.txt");
-	public static final int CONFIG_VER = 2;
+	public static final int CONFIG_VER = 3;
 
 	@Nullable
 	public static String error;
@@ -28,7 +28,6 @@ public final class Config {
 	public static int skycolor_time_change_needed_for_update = 3;
 
 	public static boolean enable_debug_renderer_disable_if_not_needed = true;
-	public static boolean enable_fps_string_optimization = true;
 	public static boolean enable_particle_manager_optimization = true;
 	public static boolean enable_toast_optimizations = true;
 	public static boolean enable_sky_angle_caching_in_worldrenderer = true;
@@ -93,7 +92,6 @@ public final class Config {
 		skycolor_time_change_needed_for_update = num(prop, "skycolor_time_change_needed_for_update");
 
 		enable_debug_renderer_disable_if_not_needed = bool(prop, "enable_debug_renderer_disable_if_not_needed");
-		enable_fps_string_optimization = bool(prop, "enable_fps_string_optimization");
 		enable_particle_manager_optimization = bool(prop, "enable_particle_manager_optimization");
 		enable_toast_optimizations = bool(prop, "enable_toast_optimizations");
 		enable_sky_angle_caching_in_worldrenderer = bool(prop, "enable_sky_angle_caching_in_worldrenderer");
@@ -104,18 +102,19 @@ public final class Config {
 
 		show_f3_text = bool(prop, "show_f3_text");
 
-		if(ver < 2) {
-			// Now that we've loaded things from the old config version,
-			// re-write the file with the new option's defaults.
+		if(ver >= 2) {
+			// Config version 2 (v2.1.1)
+			ignore_mod_incompatibilities = bool(prop, "ignore_mod_incompatibilities");
+			log_config = bool(prop, "log_config");
+		}
+
+		// Config version 3 (v2.1.2) removed the fps string optimization, nothing special to do
+
+		if(ver < CONFIG_VER) {
 			writeConfig();
 			loadConfig();
 			return;
 		}
-
-		// Config version 2 (v2.1.1)
-		ignore_mod_incompatibilities = bool(prop, "ignore_mod_incompatibilities");
-		log_config = bool(prop, "log_config");
-
 
 		if(log_config) {
 			LOGGER.info("BadOptimizations config dump:");
@@ -129,10 +128,18 @@ public final class Config {
 		}
 
 		if(!ignore_mod_incompatibilities) {
-			//noinspection ConstantValue
-			if(enable_entity_renderer_caching && PlatformMethods.isModLoaded("twilightforest")) {
-				LOGGER.warn("Disabled entity_renderer_caching because Twilight Forest is present.");
-				enable_entity_renderer_caching = false;
+			if(enable_entity_renderer_caching) {
+				if(PlatformMethods.isModLoaded("twilightforest")) {
+					enable_entity_renderer_caching = false;
+					LOGGER.info("Disabled entity_renderer_caching because Twilight Forest is present");
+				}
+			}
+
+			if(enable_sky_color_caching) {
+				if(PlatformMethods.isModLoaded("polytone")) {
+					enable_sky_color_caching = false;
+					LOGGER.info("Disabled sky_color_caching because Polytone is present");
+				}
 			}
 		}
 	}
@@ -213,9 +220,6 @@ public final class Config {
 						# Micro optimizations
 						#
 										
-						# Whether String.format should be redirected to a faster
-						# StringBuilder when calculating the FPS string.
-						enable_fps_string_optimization: %s
 						# Whether we should avoid calling the particle manager
 						# and its calculations if there are no particles.
 						enable_particle_manager_optimization: %s
@@ -270,7 +274,6 @@ public final class Config {
 						enable_sky_color_caching,
 						skycolor_time_change_needed_for_update,
 						enable_debug_renderer_disable_if_not_needed,
-						enable_fps_string_optimization,
 						enable_particle_manager_optimization,
 						enable_toast_optimizations,
 						enable_sky_angle_caching_in_worldrenderer,
@@ -285,6 +288,7 @@ public final class Config {
 						CONFIG_VER
 				);
 
-		Files.writeString(FILE.toPath(), data, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+		if(FILE.exists()) FILE.delete();
+		Files.writeString(FILE.toPath(), data, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
 	}
 }

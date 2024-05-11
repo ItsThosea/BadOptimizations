@@ -13,7 +13,8 @@
     "badoptimizations.mixins.json"
   ],
   "depends": {
-    "minecraft": ">=1.20.5"
+    "minecraft": ">=1.20.5",
+    "fabricloader": ">=0.15.0"
   },
   "custom": {
     "modmenu": {
