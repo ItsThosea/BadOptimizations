@@ -6,6 +6,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(GameRenderer.class)
 public interface GameRendererAccessor {
-	@Accessor
-	float getSkyDarkness();
+	@Accessor("skyDarkness")
+	float bo$getSkyDarkness();
 }
