@@ -21,14 +21,12 @@ public class BOMixinPlugin implements IMixinConfigPlugin {
 
 		if(mixin.equals("MixinClient_ShowInvalidConfig")) {
 			return Config.error != null;
-		} else if(mixin.equals("tick.MixinLightmapManager") || mixin.equals("accessor.GameRendererAccessor")) {
+		} else if(mixin.equals("tick.MixinLightmapManager") || mixin.equals("accessor.GameRendererAccessor") || mixin.equals("accessor.PlayerAccessor")) {
 			return Config.enable_lightmap_caching;
 		} else if(mixin.equals("tick.MixinClientWorld")) {
 			return Config.enable_sky_color_caching;
 		} else if(mixin.startsWith("debug.")) {
 			return Config.enable_debug_renderer_disable_if_not_needed;
-		} else if(mixin.startsWith("fps_string.")) {
-			return Config.enable_fps_string_optimization;
 		} else if(mixin.equals("MixinParticleManager")) {
 			return Config.enable_particle_manager_optimization;
 		} else if(mixin.equals("MixinToastManager")) {

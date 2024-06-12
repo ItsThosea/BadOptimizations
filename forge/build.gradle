@@ -24,7 +24,9 @@ dependencies {
     neoForge "net.neoforged:neoforge:${rootProject.neo_version}"
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive = false }
-    implementation(include("io.github.llamalad7:mixinextras-neoforge:0.3.2"))
+
+    // Uncomment in < 1.20.2
+    // implementation(include("io.github.llamalad7:mixinextras-neoforge:0.3.2"))
 }
 
 processResources {
