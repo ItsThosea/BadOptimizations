@@ -13,7 +13,6 @@ import net.minecraft.entity.effect.StatusEffects;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -21,41 +20,40 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LightmapTextureManager.class)
 public abstract class MixinLightmapManager {
 	@Shadow @Final private MinecraftClient client;
-	@Unique private CommonColorFactors commonFactors;
 
-	@Unique private boolean allowUpdate = false;
+	private CommonColorFactors bo$commonFactors;
+	private boolean bo$allowUpdate = false;
 
-	@Unique private double lastGamma;
-	@Unique private DimensionEffects lastDimension;
-	@Unique private boolean lastNightVision;
-	@Unique private boolean lastConduitPower;
+	private double bo$lastGamma;
+	private DimensionEffects bo$lastDimension;
+	private boolean bo$lastNightVision;
+	private boolean bo$lastConduitPower;
 
-	@Unique private float previousSkyDarkness;
-	@Unique private GameRendererAccessor gameRendererAccessor;
+	private float bo$previousSkyDarkness;
+	private GameRendererAccessor bo$gameRendererAccessor;
 
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void onInit(GameRenderer renderer, MinecraftClient client, CallbackInfo ci) {
-		this.gameRendererAccessor = (GameRendererAccessor) renderer;
-		this.commonFactors = CommonColorFactors.LIGHTMAP;
+		this.bo$gameRendererAccessor = (GameRendererAccessor) renderer;
+		this.bo$commonFactors = CommonColorFactors.LIGHTMAP;
 	}
 
-	@Unique
-	private boolean isDirty() {
+	private boolean bo$isDirty() {
 		boolean result = false;
 
 		DimensionEffects dimension = client.world.getDimensionEffects();
-		if(lastDimension != dimension) {
-			lastDimension = dimension;
+		if(bo$lastDimension != dimension) {
+			bo$lastDimension = dimension;
 			result = true;
 		}
-		float skyDarkness = gameRendererAccessor.bo$getSkyDarkness();
-		if(previousSkyDarkness != skyDarkness) {
-			previousSkyDarkness = skyDarkness;
+		float skyDarkness = bo$gameRendererAccessor.bo$getSkyDarkness();
+		if(bo$previousSkyDarkness != skyDarkness) {
+			bo$previousSkyDarkness = skyDarkness;
 			result = true;
 		}
 		double gamma = client.options.getGamma().getValue();
-		if(lastGamma != gamma) { // jamma celestial??
-			lastGamma = gamma;
+		if(bo$lastGamma != gamma) { // jamma celestial??
+			bo$lastGamma = gamma;
 			result = true;
 		}
 
@@ -66,20 +64,20 @@ public abstract class MixinLightmapManager {
 
 		StatusEffectInstance nightVision = client.player.getStatusEffect(StatusEffects.NIGHT_VISION);
 		boolean hasNightVision = nightVision != null;
-		if(lastNightVision != hasNightVision) {
-			lastNightVision = hasNightVision;
+		if(bo$lastNightVision != hasNightVision) {
+			bo$lastNightVision = hasNightVision;
 			result = true;
 		} else if(nightVision != null && nightVision.isDurationBelow(200)) {
 			result = true; // flicker effect
 		}
 
 		boolean conduitPower = client.player.hasStatusEffect(StatusEffects.CONDUIT_POWER);
-		if(lastConduitPower != conduitPower) {
-			lastConduitPower = conduitPower;
+		if(bo$lastConduitPower != conduitPower) {
+			bo$lastConduitPower = conduitPower;
 			result = true;
 		}
 
-		if(commonFactors.getTimeDelta() >= Config.lightmap_time_change_needed_for_update) {
+		if(bo$commonFactors.getTimeDelta() >= Config.lightmap_time_change_needed_for_update) {
 			result = true;
 		}
 
@@ -92,10 +90,10 @@ public abstract class MixinLightmapManager {
 
 		CommonColorFactors.tick(client.getTickDelta());
 
-		if(commonFactors.didTickChange() && (commonFactors.isDirty()) | this.isDirty()) {
-			allowUpdate = true;
+		if(bo$commonFactors.didTickChange() && (bo$commonFactors.isDirty()) | this.bo$isDirty()) {
+			bo$allowUpdate = true;
 			tick();
-			allowUpdate = false;
+			bo$allowUpdate = false;
 		}
 	}
 
@@ -103,7 +101,7 @@ public abstract class MixinLightmapManager {
 
 	@Inject(method = "tick", at = @At("HEAD"), cancellable = true)
 	private void onTick(CallbackInfo ci) {
-		if(!allowUpdate) {
+		if(!bo$allowUpdate) {
 			ci.cancel();
 		}
 	}
