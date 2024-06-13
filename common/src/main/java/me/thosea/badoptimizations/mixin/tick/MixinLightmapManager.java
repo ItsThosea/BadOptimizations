@@ -1,11 +1,14 @@
 package me.thosea.badoptimizations.mixin.tick;
 
 import me.thosea.badoptimizations.mixin.accessor.GameRendererAccessor;
+import me.thosea.badoptimizations.mixin.accessor.PlayerAccessor;
+import me.thosea.badoptimizations.other.CommonColorFactors;
 import me.thosea.badoptimizations.other.Config;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.DimensionEffects;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,16 +21,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LightmapTextureManager.class)
 public abstract class MixinLightmapManager {
 	@Shadow @Final private MinecraftClient client;
+	@Unique private CommonColorFactors commonFactors;
 
 	@Unique private boolean allowUpdate = false;
-	@Unique private int lastTick = -1;
 
-	@Unique private boolean previousHasLightning;
-	@Unique private double previousGamma;
-	@Unique private DimensionEffects previousDimension;
-	@Unique private boolean previousInWater;
-	@Unique private long previousTime;
-	@Unique private boolean previousHasNightVision;
+	@Unique private double lastGamma;
+	@Unique private DimensionEffects lastDimension;
+	@Unique private boolean lastNightVision;
+	@Unique private boolean lastConduitPower;
 
 	@Unique private float previousSkyDarkness;
 	@Unique private GameRendererAccessor gameRendererAccessor;
@@ -35,51 +36,50 @@ public abstract class MixinLightmapManager {
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void onInit(GameRenderer renderer, MinecraftClient client, CallbackInfo ci) {
 		this.gameRendererAccessor = (GameRendererAccessor) renderer;
+		this.commonFactors = CommonColorFactors.LIGHTMAP;
 	}
 
 	@Unique
-	private boolean isREALLYDirty() {
+	private boolean isDirty() {
 		boolean result = false;
 
-		boolean hasLightning = client.world.getLightningTicksLeft() != 0;
-		if(hasLightning != previousHasLightning) {
-			previousHasLightning = hasLightning;
-			result = true;
-		}
-
-		double gamma = client.options.getGamma().getValue();
-		if(previousGamma != gamma) {
-			previousGamma = gamma;
-			result = true;
-		}
-
 		DimensionEffects dimension = client.world.getDimensionEffects();
-		if(previousDimension != dimension) {
-			previousDimension = dimension;
+		if(lastDimension != dimension) {
+			lastDimension = dimension;
 			result = true;
 		}
-
-		boolean inWater = client.player.isSubmergedInWater();
-		if(previousInWater != inWater) {
-			previousInWater = inWater;
-			result = true;
-		}
-
-		long time = client.world.getTimeOfDay();
-		if(Math.abs(time - previousTime) >= Config.lightmap_time_change_needed_for_update) {
-			previousTime = time;
-			result = true;
-		}
-
-		float skyDarkness = gameRendererAccessor.getSkyDarkness();
+		float skyDarkness = gameRendererAccessor.bo$getSkyDarkness();
 		if(previousSkyDarkness != skyDarkness) {
 			previousSkyDarkness = skyDarkness;
 			result = true;
 		}
+		double gamma = client.options.getGamma().getValue();
+		if(lastGamma != gamma) { // jamma celestial??
+			lastGamma = gamma;
+			result = true;
+		}
 
-		boolean hasNightVision = client.player.hasStatusEffect(StatusEffects.NIGHT_VISION);
-		if(previousHasNightVision != hasNightVision) {
-			previousHasNightVision = hasNightVision;
+		PlayerAccessor accessor = (PlayerAccessor) client.player;
+		if(client.player.isSubmergedInWater() && accessor.bo$underwaterVisibilityTicks() < 600) {
+			result = true;
+		}
+
+		StatusEffectInstance nightVision = client.player.getStatusEffect(StatusEffects.NIGHT_VISION);
+		boolean hasNightVision = nightVision != null;
+		if(lastNightVision != hasNightVision) {
+			lastNightVision = hasNightVision;
+			result = true;
+		} else if(nightVision != null && nightVision.getDuration() < 200) {
+			result = true; // flicker effect
+		}
+
+		boolean conduitPower = client.player.hasStatusEffect(StatusEffects.CONDUIT_POWER);
+		if(lastConduitPower != conduitPower) {
+			lastConduitPower = conduitPower;
+			result = true;
+		}
+
+		if(commonFactors.getTimeDelta() >= Config.lightmap_time_change_needed_for_update) {
 			result = true;
 		}
 
@@ -90,15 +90,12 @@ public abstract class MixinLightmapManager {
 	private void onEnable(CallbackInfo ci) {
 		if(client.player == null) return;
 
-		int tick = client.player.age;
-		if(lastTick != tick) {
-			lastTick = tick;
+		CommonColorFactors.tick(client.getTickDelta());
 
-			if(isREALLYDirty()) {
-				allowUpdate = true;
-				tick();
-				allowUpdate = false;
-			}
+		if(commonFactors.didTickChange() && (commonFactors.isDirty()) | this.isDirty()) {
+			allowUpdate = true;
+			tick();
+			allowUpdate = false;
 		}
 	}
 
