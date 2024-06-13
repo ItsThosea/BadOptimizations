@@ -13,7 +13,6 @@ import net.minecraft.resource.ResourceReload;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
 import java.io.File;
@@ -23,18 +22,17 @@ public class MixinClient_ShowInvalidConfig {
 	// Title screen and accessibility screen
 	@WrapOperation(method = "onInitFinished", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;setScreen(Lnet/minecraft/client/gui/screen/Screen;)V"))
 	private void onSetScreen(MinecraftClient client, Screen screen, Operation<Void> original) {
-		client.setScreen(makeBOWarnScreen(() -> original.call(client, screen)));
+		client.setScreen(bo$makeBOWarnScreen(() -> original.call(client, screen)));
 	}
 
 	@WrapOperation(method = "onInitFinished", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/QuickPlay;startQuickPlay(Lnet/minecraft/client/MinecraftClient;Lnet/minecraft/client/RunArgs$QuickPlay;Lnet/minecraft/resource/ResourceReload;Lnet/minecraft/client/realms/RealmsClient;)V"))
 	private void onStartQuickPlay(MinecraftClient client, QuickPlay quickPlay, ResourceReload reload, RealmsClient realms, Operation<Void> original) {
-		client.setScreen(makeBOWarnScreen(() -> {
+		client.setScreen(bo$makeBOWarnScreen(() -> {
 			original.call(client, quickPlay, reload, realms);
 		}));
 	}
 
-	@Unique
-	private Screen makeBOWarnScreen(Runnable onClose) {
+	private Screen bo$makeBOWarnScreen(Runnable onClose) {
 		return new ConfirmScreen(yes -> {
 			if(yes) { // continue
 				onClose.run();
