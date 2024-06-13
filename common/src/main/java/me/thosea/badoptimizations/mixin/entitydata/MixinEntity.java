@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -31,42 +30,42 @@ public abstract class MixinEntity implements EntityMethods {
 
 	@Shadow public World world;
 
-	@Unique private boolean glowingBO;
-	@Unique private boolean onFire = false;
-	@Unique private boolean sneaking = false;
-	@Unique private boolean sprinting = false;
-	@Unique private boolean swimming = false;
-	@Unique private boolean invisible = false;
-	@Unique private boolean nameVisible = false;
-	@Unique private boolean silent = false;
-	@Unique private boolean noGravity = false;
-	@Unique	private int frozenTicks = 0;
-	@Unique private EntityPose pose = EntityPose.STANDING;
-	@Unique private Optional<Text> customName = Optional.empty();
-	@Unique private int remainingAirTicks = getMaxAir();
+	private boolean bo$glowingClient;
+	private boolean bo$onFire = false;
+	private boolean bo$sneaking = false;
+	private boolean bo$sprinting = false;
+	private boolean bo$swimming = false;
+	private boolean bo$invisible = false;
+	private boolean bo$nameVisible = false;
+	private boolean bo$silent = false;
+	private boolean bo$noGravity = false;
+	private int bo$frozenTicks = 0;
+	private EntityPose bo$pose = EntityPose.STANDING;
+	private Optional<Text> bo$customName = Optional.empty();
+	private int bo$remainingAirTicks = getMaxAir();
 
 	@Shadow public abstract int getMaxAir();
 
 	@Redirect(method = "isOnFire", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getFlag(I)Z"))
 	private boolean getIsOnFire(Entity instance, int index) {
-		return onFire;
+		return bo$onFire;
 	}
 
 	@Shadow private boolean glowing; // vanilla glowing on the server
 
-	@Overwrite public boolean isGlowing() {return world.isClient ? glowingBO : glowing;}
-	@Overwrite public boolean isSneaking() {return sneaking;}
-	@Overwrite public boolean isSprinting() {return sprinting;}
-	@Overwrite public boolean isSwimming() {return swimming;}
-	@Overwrite public boolean isInvisible() {return invisible;}
-	@Overwrite public int getAir() {return remainingAirTicks;}
-	@Overwrite @Nullable public Text getCustomName() {return customName.orElse(null);}
-	@Overwrite public boolean hasCustomName() {return customName.isPresent();}
-	@Overwrite public boolean isCustomNameVisible() {return nameVisible;}
-	@Overwrite public boolean isSilent() {return silent;}
-	@Overwrite public boolean hasNoGravity() {return noGravity;}
-	@Overwrite public EntityPose getPose() {return pose;}
-	@Overwrite public int getFrozenTicks() {return frozenTicks;}
+	@Overwrite public boolean isGlowing() {return world.isClient ? bo$glowingClient : glowing;}
+	@Overwrite public boolean isSneaking() {return bo$sneaking;}
+	@Overwrite public boolean isSprinting() {return bo$sprinting;}
+	@Overwrite public boolean isSwimming() {return bo$swimming;}
+	@Overwrite public boolean isInvisible() {return bo$invisible;}
+	@Overwrite public int getAir() {return bo$remainingAirTicks;}
+	@Overwrite @Nullable public Text getCustomName() {return bo$customName.orElse(null);}
+	@Overwrite public boolean hasCustomName() {return bo$customName.isPresent();}
+	@Overwrite public boolean isCustomNameVisible() {return bo$nameVisible;}
+	@Overwrite public boolean isSilent() {return bo$silent;}
+	@Overwrite public boolean hasNoGravity() {return bo$noGravity;}
+	@Overwrite public EntityPose getPose() {return bo$pose;}
+	@Overwrite public int getFrozenTicks() {return bo$frozenTicks;}
 
 	@Shadow @Final protected DataTracker dataTracker;
 
@@ -75,33 +74,32 @@ public abstract class MixinEntity implements EntityMethods {
 		if(data == FLAGS.getId()) {
 			byte flags = dataTracker.get(FLAGS);
 
-			onFire = getFlag(flags, 0);
-			sneaking = getFlag(flags, 1);
-			sprinting = getFlag(flags, 3);
-			swimming = getFlag(flags, 4);
-			invisible = getFlag(flags, 5);
+			bo$onFire = bo$getFlag(flags, 0);
+			bo$sneaking = bo$getFlag(flags, 1);
+			bo$sprinting = bo$getFlag(flags, 3);
+			bo$swimming = bo$getFlag(flags, 4);
+			bo$invisible = bo$getFlag(flags, 5);
 			if(world.isClient) {
-				glowingBO = getFlag(flags, 6);
+				bo$glowingClient = bo$getFlag(flags, 6);
 			}
 		} else if(data == AIR.getId()) {
-			remainingAirTicks = dataTracker.get(AIR);
+			bo$remainingAirTicks = dataTracker.get(AIR);
 		} else if(data == CUSTOM_NAME.getId()) {
-			customName = dataTracker.get(CUSTOM_NAME);
+			bo$customName = dataTracker.get(CUSTOM_NAME);
 		} else if(data == NAME_VISIBLE.getId()) {
-			nameVisible = dataTracker.get(NAME_VISIBLE);
+			bo$nameVisible = dataTracker.get(NAME_VISIBLE);
 		} else if(data == SILENT.getId()) {
-			silent = dataTracker.get(SILENT);
+			bo$silent = dataTracker.get(SILENT);
 		} else if(data == NO_GRAVITY.getId()) {
-			noGravity = dataTracker.get(NO_GRAVITY);
+			bo$noGravity = dataTracker.get(NO_GRAVITY);
 		} else if(data == POSE.getId()) {
-			pose = dataTracker.get(POSE);
+			bo$pose = dataTracker.get(POSE);
 		} else if(data == FROZEN_TICKS.getId()) {
-			frozenTicks = dataTracker.get(FROZEN_TICKS);
+			bo$frozenTicks = dataTracker.get(FROZEN_TICKS);
 		}
 	}
 
-	@Unique
-	private boolean getFlag(byte flags, int index) {
+	private boolean bo$getFlag(byte flags, int index) {
 		return (flags & 1 << index) != 0;
 	}
 }

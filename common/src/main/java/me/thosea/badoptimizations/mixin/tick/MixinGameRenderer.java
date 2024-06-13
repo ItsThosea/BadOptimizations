@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public final class MixinGameRenderer {
 	@Shadow @Final MinecraftClient client;
-	@Unique private SimpleOption<Double> fovEffectScale;
+	@Unique private SimpleOption<Double> bo$fovEffectScale;
 
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void afterCreate(MinecraftClient client,
@@ -29,13 +29,13 @@ public final class MixinGameRenderer {
 	                         ResourceManager resourceManager,
 	                         BufferBuilderStorage buffers,
 	                         CallbackInfo ci) {
-		fovEffectScale = client.options.getFovEffectScale();
+		bo$fovEffectScale = client.options.getFovEffectScale();
 	}
 
 	// don't do unneeded FOV calculations
 	@WrapOperation(method = "updateFovMultiplier", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;getFovMultiplier()F"))
 	private float getPlayerFov(AbstractClientPlayerEntity player, Operation<Float> original) {
-		if(fovEffectScale.getValue() == 0) {
+		if(bo$fovEffectScale.getValue() == 0) {
 			if(client.options.getPerspective() == Perspective.FIRST_PERSON && player.isUsingSpyglass()) {
 				return 0.1f;
 			} else {

@@ -1,8 +1,0 @@
-- Fix issues with lightmap not updating properly under some circumstances
-- Remove fps string optimization
-- Bump config version to 3
-- (1.20.1-) Mark entity renderer optimization as incompatible with Aquaculture
-- (1.20.2+) Fabric Loader version 0.15.0 or greater is now required
-- (1.20.2+) NeoForge version 20.2.84 or greater is now required
-- Mark sky color optimizations as incompatbile with Polytone
-- **This will be the final release of the 1.19 versions!**
