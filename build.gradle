@@ -58,7 +58,7 @@ file("changelog.md").withInputStream {
 
 publishMods {
     file = file("build/libs/merged/${jarName}")
-    displayName = "$rootProject.mod_version (1.19.1/1.19.2)"
+    displayName = "$rootProject.mod_version (1.19.3)"
 
     version = rootProject.mod_version
     type = STABLE
