@@ -50,7 +50,7 @@ allprojects {
     }
 }
 
-file("changelog.txt").withInputStream {
+file("changelog.md").withInputStream {
     var str = new String(it.readAllBytes())
     while(str.endsWith("\n")) str = str.substring(0, str.length() - 1)
     publishMods.changelog = str
