@@ -25,16 +25,16 @@ import java.util.concurrent.locks.ReadWriteLock;
 @Mixin(DataTracker.class)
 public abstract class MixinDataTracker {
 	@Shadow @Final @Mutable private ReadWriteLock lock;
-	@Unique private EntityMethods entityMethods;
+	@Unique private EntityMethods bo$entityMethods;
 
 	@Inject(method = "set(Lnet/minecraft/entity/data/TrackedData;Ljava/lang/Object;Z)V", at = @At(value = "INVOKE", shift = Shift.AFTER, target = "Lnet/minecraft/entity/data/DataTracker$Entry;set(Ljava/lang/Object;)V"))
 	private void onDataSet(TrackedData<?> key, Object value, boolean force, CallbackInfo ci) {
-		entityMethods.bo$refreshEntityData(key.getId());
+		bo$entityMethods.bo$refreshEntityData(key.getId());
 	}
 
 	@Inject(method = "copyToFrom", at = @At("TAIL"))
 	private void onCopy(Entry<?> to, SerializedEntry<?> from, CallbackInfo ci) {
-		entityMethods.bo$refreshEntityData(from.id());
+		bo$entityMethods.bo$refreshEntityData(from.id());
 	}
 
 	@Inject(method = "<init>", at = @At("TAIL"))
@@ -64,6 +64,6 @@ public abstract class MixinDataTracker {
 			public Lock writeLock() {return lock;}
 		};
 
-		this.entityMethods = (EntityMethods) trackedEntity;
+		this.bo$entityMethods = (EntityMethods) trackedEntity;
 	}
 }

@@ -12,7 +12,6 @@ import net.minecraft.client.network.ServerInfo;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
 import java.io.File;
@@ -29,7 +28,7 @@ public class MixinClient_ShowInvalidConfig {
 			return;
 		}
 
-		client.setScreen(makeBOWarnScreen(() -> original.call(client, screen)));
+		client.setScreen(bo$makeWarningScreen(() -> original.call(client, screen)));
 	}
 
 	@WrapOperation(method = "method_45026", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ConnectScreen;connect(Lnet/minecraft/client/gui/screen/Screen;Lnet/minecraft/client/MinecraftClient;Lnet/minecraft/client/network/ServerAddress;Lnet/minecraft/client/network/ServerInfo;)V"))
@@ -39,13 +38,12 @@ public class MixinClient_ShowInvalidConfig {
 			return;
 		}
 
-		client.setScreen(makeBOWarnScreen(() -> {
+		client.setScreen(bo$makeWarningScreen(() -> {
 			original.call(screen, client, address, info);
 		}));
 	}
 
-	@Unique
-	private Screen makeBOWarnScreen(Runnable onClose) {
+	private Screen bo$makeWarningScreen(Runnable onClose) {
 		return new ConfirmScreen(yes -> {
 			if(yes) { // continue
 				onClose.run();
