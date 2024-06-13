@@ -5,6 +5,8 @@ plugins {
     id "me.modmuss50.mod-publish-plugin" version "0.5.0"
 }
 
+var jarName = "BadOptimizations-${rootProject.mod_version}-1.19.1-19.2.jar"
+
 architectury {
     minecraft = rootProject.minecraft_version
 }
@@ -43,7 +45,7 @@ allprojects {
     forgix {
         group "me.thosea"
         outputDir "build/libs/merged"
-        mergedJarName "BadOptimizations-${version}.jar"
+        mergedJarName jarName
         tasks.build.finalizedBy mergeJars
     }
 }
@@ -55,7 +57,7 @@ file("changelog.txt").withInputStream {
 }
 
 publishMods {
-    file = file("build/libs/merged/BadOptimizations-${rootProject.mod_version}.jar")
+    file = file("build/libs/merged/${jarName}")
     displayName = "$rootProject.mod_version (1.19.1/1.19.2)"
 
     version = rootProject.mod_version
@@ -75,8 +77,6 @@ publishMods {
         projectId = "949555"
         minecraftVersions.add("1.19.1")
         minecraftVersions.add("1.19.2")
-        javaVersions.add(JavaVersion.VERSION_17)
-        javaVersions.add(JavaVersion.VERSION_18)
         clientRequired = true
     }
 }
