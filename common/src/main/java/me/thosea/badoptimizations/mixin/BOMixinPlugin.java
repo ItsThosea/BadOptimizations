@@ -19,14 +19,12 @@ public class BOMixinPlugin implements IMixinConfigPlugin {
 	public boolean shouldApplyMixin(String targetClassName, String mixin) {
 		mixin = mixin.substring("me.thosea.badoptimizations.mixin.".length());
 
-		if(mixin.equals("tick.MixinLightmapManager") || mixin.equals("accessor.GameRendererAccessor")) {
+		if(mixin.equals("tick.MixinLightmapManager") || mixin.equals("accessor.GameRendererAccessor") || mixin.equals("accessor.PlayerAccessor")) {
 			return Config.enable_lightmap_caching;
 		} else if(mixin.equals("tick.MixinClientWorld")) {
 			return Config.enable_sky_color_caching;
 		} else if(mixin.startsWith("debug.")) {
 			return Config.enable_debug_renderer_disable_if_not_needed;
-		} else if(mixin.startsWith("fps_string.")) {
-			return Config.enable_fps_string_optimization;
 		} else if(mixin.equals("MixinParticleManager")) {
 			return Config.enable_particle_manager_optimization;
 		} else if(mixin.equals("MixinToastManager")) {
