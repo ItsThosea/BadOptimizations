@@ -88,7 +88,7 @@ public abstract class MixinLightmapManager {
 	private void onEnable(CallbackInfo ci) {
 		if(client.player == null) return;
 
-		CommonColorFactors.tick(client.getTickDelta());
+		CommonColorFactors.tick();
 
 		if(bo$commonFactors.didTickChange() && (bo$commonFactors.isDirty()) | this.bo$isDirty()) {
 			bo$allowUpdate = true;
