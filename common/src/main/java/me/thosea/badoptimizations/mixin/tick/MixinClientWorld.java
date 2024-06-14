@@ -44,7 +44,7 @@ public abstract class MixinClientWorld extends World {
 	private void onGetSkyColor(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
 		if(bo$skyColorCache == null || client.player == null) return;
 
-		CommonColorFactors.tick(tickDelta);
+		CommonColorFactors.tick();
 
 		if(this.bo$commonFactors.didTickChange()) {
 			if(bo$isBiomeDirty(cameraPos.subtract(2.0, 2.0, 2.0).multiply(0.25))) {

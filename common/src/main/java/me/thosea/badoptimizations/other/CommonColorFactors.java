@@ -31,12 +31,13 @@ public final class CommonColorFactors {
 	private boolean didTickChange;
 	private long lastTime;
 
-	public static void tick(float tickDelta) {
+	public static void tick() {
 		int tick = CLIENT.player.age;
 		if(lastUpdateTick == tick) return;
 		lastUpdateTick = tick;
 
 		ClientWorld world = CLIENT.world;
+		float tickDelta = CLIENT.getRenderTickCounter().getTickDelta(false);
 		boolean result = false;
 
 		float rainGradient = world.getRainGradient(tickDelta);
