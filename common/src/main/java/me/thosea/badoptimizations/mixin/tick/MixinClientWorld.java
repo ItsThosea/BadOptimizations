@@ -47,10 +47,12 @@ public abstract class MixinClientWorld extends World {
 
 		if(this.bo$commonFactors.didTickChange()) {
 			if(bo$isBiomeDirty(cameraPos.subtract(2.0, 2.0, 2.0).multiply(0.25))) {
+				bo$commonFactors.updateLastTime();
 				// Do vanilla behavior, so surrounding biomes are factored in
 				return;
 			} else if(bo$commonFactors.isDirty() || bo$commonFactors.getTimeDelta() >= Config.skycolor_time_change_needed_for_update) {
 				bo$skyColorCache = bo$calcSkyColor(tickDelta);
+				bo$commonFactors.updateLastTime();
 			}
 		}
 
