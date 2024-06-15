@@ -95,12 +95,13 @@ public final class CommonColorFactors {
 	}
 
 	/**
-	 * @return in-game time passed since the last call of this method
+	 * @return in-game time passed since the last call of {@link #updateLastTime()}
 	 */
 	public long getTimeDelta() {
-		long time = CLIENT.world.getLunarTime();
-		long result = Math.abs(time - lastTime);
-		lastTime = time;
-		return result;
+		return Math.abs(CLIENT.world.getLunarTime() - lastTime);
+	}
+
+	public void updateLastTime() {
+		lastTime = CLIENT.world.getLunarTime();
 	}
 }
