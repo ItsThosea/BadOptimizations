@@ -91,6 +91,8 @@ public abstract class MixinLightmapManager {
 		CommonColorFactors.tick();
 
 		if(bo$commonFactors.didTickChange() && (bo$commonFactors.isDirty()) | this.bo$isDirty()) {
+			bo$commonFactors.updateLastTime();
+
 			bo$allowUpdate = true;
 			tick();
 			bo$allowUpdate = false;
