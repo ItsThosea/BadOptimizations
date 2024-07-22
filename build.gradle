@@ -1,8 +1,8 @@
 plugins {
     id "architectury-plugin" version "3.4-SNAPSHOT"
-    id "dev.architectury.loom" version "1.6-SNAPSHOT" apply false
-    id "io.github.pacifistmc.forgix" version "1.2.7"
-    id "me.modmuss50.mod-publish-plugin" version "0.5.0"
+    id "dev.architectury.loom" version "1.7-SNAPSHOT" apply false
+    id "io.github.pacifistmc.forgix" version "1.2.9"
+    id "me.modmuss50.mod-publish-plugin" version "0.6.2"
 }
 
 var jarName = "BadOptimizations-${rootProject.mod_version}-${rootProject.minecraft_version}.jar"
@@ -20,7 +20,7 @@ subprojects {
             it.mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
             it.mappings(rootProject.rootDir.toPath().resolve("1.21.tiny").toFile())
         }
-        implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.2"))
+        implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.0"))
     }
 }
 
