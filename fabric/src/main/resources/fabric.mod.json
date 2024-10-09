@@ -4,6 +4,7 @@
   "version": "${version}",
   "name": "BadOptimizations",
   "description": "Optimization mod that focuses on things other than rendering",
+  "icon": "assets/badoptimizations/icon.png",
   "authors": [
     "Thosea"
   ],
