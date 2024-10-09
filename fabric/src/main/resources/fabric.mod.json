@@ -4,10 +4,15 @@
   "version": "${version}",
   "name": "BadOptimizations",
   "description": "Optimization mod that focuses on things other than rendering",
+  "icon": "assets/badoptimizations/icon.png",
   "authors": [
     "Thosea"
   ],
-  "contact": {},
+  "contact": {
+    "homepage": "https://modrinth.com/mod/badoptimizations/",
+    "sources": "https://github.com/ItsThosea/BadOptimizations/",
+    "issues": "https://github.com/ItsThosea/BadOptimizations/issues/"
+  },
   "environment": "client",
   "mixins": [
     "badoptimizations.mixins.json"
