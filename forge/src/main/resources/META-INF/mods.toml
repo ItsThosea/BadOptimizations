@@ -2,29 +2,24 @@ modLoader="lowcodefml" #mandatory
 loaderVersion="[1,)"
 license="MIT"
 issueTrackerURL="https://github.com/ItsThosea/BadOptimizations/issues"
+# Forge 1.20.4- requires mod icon to be in root folder
+logoFile="badoptimizations-icon.png"
+logoBlur=false
 
-[[mods]] #mandatory
-   # The modid of the mod
-   modId="badoptimizations"
-   # The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
-   # ${version} will substitute the value of the Implementation-Version as read from the mod's JAR file metadata
-   # see the associated build.gradle script for how to populate this completely automatically during a build
-   version="${version}"
-   # A display name for the mod
-   displayName="BadOptimizations" #mandatory
-   # A text field displayed in the mod UI
-   authors="Thosea" #optional
-   # The description text for the mod (multi line!) (#mandatory)
-   description='''
+[[mods]]
+modId="badoptimizations"
+version="${version}"
+displayName="BadOptimizations"
+authors="Thosea"
+description='''
    Optimization mod that focuses on things other than rendering
    '''
 [[dependencies.badoptimizations]]
-   modId="minecraft"
-   mandatory=true
-   # This version range declares a minimum of the current minecraft version up to but not including the next major version
-   versionRange="[1.20.2,1.21)"
-   ordering="NONE"
-   side="CLIENT"
+modId="minecraft"
+mandatory=true
+versionRange="1.20.2"
+ordering="NONE"
+side="CLIENT"
 
 [[mixins]]
 config = "badoptimizations.mixins.json"
