@@ -20,7 +20,7 @@ public final class Config {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger("BadOptimizations");
 	public static final File FILE = new File(PlatformMethods.getConfigFolder(), "badoptimizations.txt");
-	public static final int CONFIG_VER = 3;
+	public static final int CONFIG_VER = 4;
 
 	@Nullable
 	public static String error;
@@ -213,53 +213,50 @@ public final class Config {
 		String data =
 				"""
 						# BadOptimizations configuration
-						# Here you can configure stuff, mostly enabling/disabling specific optimizations.
-
+						# Toggle and configure optimizations here.
+						# *All* of these require restarts.
+						
 						# Whether we should cancel updating the lightmap if not needed.
 						enable_lightmap_caching: %s
-						# How much the in-game time must change in ticks (1/20th of a second)
-						# for the lightmap to immediately update.
+						# How much the in-game time must change in ticks (default tick rate = 1/20th of a second)
+						# for the lightmap to update.
 						# Higher values will result in less frequent updates
-						# to block lighting, but better performance.
-						# Values below 2 will disable hte optimization.
+						# to block lighting, but slightly better performance.
+						# Values below 2 will disable the optimization.
 						lightmap_time_change_needed_for_update: %s
-										
+						
 						# Whether the sky's color should be cached unless you're on a biome border.
 						enable_sky_color_caching: %s
 						# How much the in-game time must change in ticks for the sky color to
-						# be recalculated with our own calculation. Higher values will result in
+						# be recalculated when not between biome borders. Higher values will result in
 						# the sky updating less frequently, but slightly better performance.
 						# Values below 2 will all have the same effect.
 						skycolor_time_change_needed_for_update: %s
 						
 						# Whether we should avoid calling debug renderers
-						# and their calculations if there are no debug entries to render
+						# if there are no debug entries to render or process.
 						enable_debug_renderer_disable_if_not_needed: %s
-										
+						
 						#
 						# Micro optimizations
 						#
-										
+						
 						# Whether we should avoid calling the particle manager
 						# and its calculations if there are no particles.
 						enable_particle_manager_optimization: %s
-						# Whether we should avoid calling the toast manager
-						# if there are no toasts
+						# Whether we should avoid calling the toast manager if there are no toasts.
 						enable_toast_optimizations: %s
 						# Whether the result of getSkyAngle should be cached
-						# for the entire frame during rendering
+						# for the entire frame during rendering.
 						enable_sky_angle_caching_in_worldrenderer: %s
-						# Whether entity renderers should be stored directly in EntityType
-						# instead of a HashMap.
-						# Disable to fix compatibility with Twilight Forest
+						# Whether entity renderers should be stored directly in EntityType instead of a HashMap.
+						# If your entity-adding mod crashes with this mod, it's probably this option's fault.
 						enable_entity_renderer_caching: %s
-						# Whether block entity renderers should be stored in BlockEntityType
-						# instead of a HashMap.
+						# Whether block entity renderers should be stored in BlockEntityType instead of a HashMap.
 						enable_block_entity_renderer_caching: %s
 						# Whether entity flags should be cached instead of calling DataTracker.
-						# Also removes the unnecessary thread lock in DataTracker
-						# however this is also done by Lithium (they don't conflict, however).
-						# This has no effect in 1.20.5+!
+						# Also removes the unnecessary thread lock in DataTracker.
+						# Unneeded with Lithium. Has no effect in Minecraft 1.20.5+.
 						enable_entity_flag_caching: %s
 						# Whether we should avoid calling FOV calculations
 						# if the FOV effect scale is zero.
@@ -277,7 +274,7 @@ public final class Config {
 						
 						# Some config options will be force-disabled if certain mods are present
 						# due to incompatibilities (e.g. entity rendering caching
-						# is disabled w/ Twilight Forest).
+						# is disabled w/ Twilight Forest / BedrockSkinUtility / SkinShuffle).
 						# However, if you still want to use the optimizations, you can override it
 						# by setting this to true. Beware of crashes. And Herobrine.
 						ignore_mod_incompatibilities: %s
