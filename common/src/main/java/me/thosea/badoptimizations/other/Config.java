@@ -8,7 +8,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
+
+import static me.thosea.badoptimizations.other.PlatformMethods.isModLoaded;
 
 @SuppressWarnings("unused")
 public final class Config {
@@ -110,7 +114,7 @@ public final class Config {
 			log_config = bool(prop, "log_config");
 		}
 
-		// Config version 3 (v2.1.2) removed the fps string optimization, nothing special to do
+		// Config v3 removed the fps string optimization, nothing to do
 
 		if(ver < CONFIG_VER) {
 			writeConfig();
@@ -126,21 +130,34 @@ public final class Config {
 		}
 
 		if(!ignore_mod_incompatibilities) {
-			if(enable_entity_renderer_caching) {
-				if(PlatformMethods.isModLoaded("twilightforest")) {
-					enable_entity_renderer_caching = false;
-					LOGGER.info("Disabled entity_renderer_caching because Twilight Forest is present");
-				} else if(PlatformMethods.isModLoaded("aquaculture")) {
-					enable_entity_renderer_caching = false;
-					LOGGER.info("Disabled entity_renderer_caching because Aquaculture is present");
-				}
-			}
+			disableIncompatibleOptions();
+		}
+	}
 
-			if(enable_sky_color_caching) {
-				if(PlatformMethods.isModLoaded("polytone")) {
-					enable_sky_color_caching = false;
-					LOGGER.info("Disabled sky_color_caching because Polytone is present");
-				}
+	private static void disableIncompatibleOptions() {
+		if(enable_entity_renderer_caching) {
+			disableIf(
+					"enable_entity_renderer_caching",
+					List.of("twilightforest", "skinshuffle", "bedrockskinutility"),
+					() -> enable_entity_renderer_caching = false
+			);
+		}
+		if(enable_sky_color_caching) {
+			disableIf(
+					"enable_sky_color_caching",
+					Collections.singletonList("polytone"),
+					() -> enable_sky_color_caching = false
+			);
+		}
+	}
+
+	@SuppressWarnings("UnreachableCode")
+	private static void disableIf(String option, List<String> mods, Runnable disabler) {
+		for(String mod : mods) {
+			if(isModLoaded(mod)) {
+				disabler.run();
+				LOGGER.info("Disabled {} because mod \"{}\" is present.", option, mod);
+				break;
 			}
 		}
 	}
@@ -193,7 +210,7 @@ public final class Config {
 
 		String data =
 				"""
-						# BadOptimizations configuration
+				# BadOptimizations configuration
 						# Here you can configure stuff, mostly enabling/disabling specific optimizations.
 
 						# Whether we should cancel updating the lightmap if not needed.
@@ -237,10 +254,10 @@ public final class Config {
 						# Whether block entity renderers should be stored in BlockEntityType
 						# instead of a HashMap.
 						enable_block_entity_renderer_caching: %s
-						# Whether entity flags should be cached instead of
-						# calling DataTracker.
+						# Whether entity flags should be cached instead of calling DataTracker.
 						# Also removes the unnecessary thread lock in DataTracker
 						# however this is also done by Lithium (they don't conflict, however).
+						# This has no effect in 1.20.5+!
 						enable_entity_flag_caching: %s
 						# Whether we should avoid calling FOV calculations
 						# if the FOV effect scale is zero.
