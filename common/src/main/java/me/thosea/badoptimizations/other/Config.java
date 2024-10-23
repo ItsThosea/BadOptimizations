@@ -47,7 +47,7 @@ public final class Config {
 
 	public static void load() {
 		if(FILE.exists()) {
-			LOGGER.info("Loading config from {}", FILE);
+			LOGGER.info("Loading config file");
 
 			try {
 				loadConfig();
@@ -60,8 +60,6 @@ public final class Config {
 						"If you need to, you can delete the file to generate a new one.", e);
 			}
 		} else {
-			LOGGER.info("Creating config file version {} at {}", CONFIG_VER, FILE);
-
 			try {
 				writeConfig();
 			} catch(Exception e) {
@@ -115,6 +113,7 @@ public final class Config {
 		}
 
 		// Config v3 removed the fps string optimization, nothing to do
+		// Config v4 only rephrases comments
 
 		if(ver < CONFIG_VER) {
 			writeConfig();
@@ -151,7 +150,6 @@ public final class Config {
 		}
 	}
 
-	@SuppressWarnings("UnreachableCode")
 	private static void disableIf(String option, List<String> mods, Runnable disabler) {
 		for(String mod : mods) {
 			if(isModLoaded(mod)) {
@@ -200,7 +198,9 @@ public final class Config {
 		return result;
 	}
 
-	private static void writeConfig() throws Exception {
+	public static void writeConfig() throws Exception {
+		LOGGER.info("Generating config file version {}", CONFIG_VER);
+
 		File parent = FILE.getParentFile();
 		if(!parent.exists()) {
 			if(!parent.mkdirs()) {

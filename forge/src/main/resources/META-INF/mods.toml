@@ -1,4 +1,4 @@
-modLoader="lowcodefml" #mandatory
+modLoader="javafml"
 loaderVersion="[1,)"
 license="MIT"
 issueTrackerURL="https://github.com/ItsThosea/BadOptimizations/issues"
@@ -17,7 +17,7 @@ description='''
 [[dependencies.badoptimizations]]
 modId="minecraft"
 mandatory=true
-versionRange="1.20.2"
+versionRange="[1.20.2,1.20.4]"
 ordering="NONE"
 side="CLIENT"
 

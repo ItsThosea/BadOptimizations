@@ -4,21 +4,22 @@ import dev.architectury.injectables.annotations.ExpectPlatform;
 
 import java.io.File;
 
+// don't throw dummy exception so intellij doesn't mark code as unreachable
 public final class PlatformMethods {
 	private PlatformMethods() {}
 
 	@ExpectPlatform
 	public static String getVersion() {
-		throw new AssertionError();
+		return "";
 	}
 
 	@ExpectPlatform
 	public static File getConfigFolder() {
-		throw new AssertionError();
+		return new File(".");
 	}
 
 	@ExpectPlatform
 	public static boolean isModLoaded(String id) {
-		throw new AssertionError();
+		return true;
 	}
 }
