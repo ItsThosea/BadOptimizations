@@ -1,6 +1,5 @@
 package me.thosea.badoptimizations.other;
 
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +20,6 @@ public final class Config {
 	public static final Logger LOGGER = LoggerFactory.getLogger("BadOptimizations");
 	public static final File FILE = new File(PlatformMethods.getConfigFolder(), "badoptimizations.txt");
 	public static final int CONFIG_VER = 4;
-
-	@Nullable
-	public static String error;
 
 	public static boolean enable_lightmap_caching = true;
 	public static int lightmap_time_change_needed_for_update = 80;
@@ -52,20 +48,16 @@ public final class Config {
 			try {
 				loadConfig();
 			} catch(Exception e) {
-				error = """
-						BadOptimizations failed to load the config,
-						and some config options have not been read properly.
-						Read the game log for details.""";
 				LOGGER.error("Failed to load config from " + FILE + ". " +
 						"If you need to, you can delete the file to generate a new one.", e);
+				System.exit(1);
 			}
 		} else {
 			try {
 				writeConfig();
 			} catch(Exception e) {
-				error = "BadOptimizations failed to write the default config."
-						+ "\nRead the game log for details.";
 				LOGGER.error("Failed to write default config to " + FILE, e);
+				System.exit(1);
 			}
 		}
 	}
@@ -160,11 +152,11 @@ public final class Config {
 		}
 	}
 
-	private static boolean bool(Properties prop, String name) throws Exception {
+	private static boolean bool(Properties prop, String name) {
 		String str = prop.getProperty(name);
 
 		if(str == null) {
-			throw new Exception("Config option " + name + " not found.");
+			throw new IllegalStateException("Config option " + name + " not found.");
 		}
 
 		if(str.equalsIgnoreCase("true")) {
@@ -172,15 +164,15 @@ public final class Config {
 		} else if(str.equalsIgnoreCase("false")) {
 			return false;
 		} else {
-			throw new Exception("Config option " + name + " is not \"true\" or \"false\" (\"" + str + "\").");
+			throw new IllegalStateException("Config option " + name + " is not \"true\" or \"false\" (\"" + str + "\").");
 		}
 	}
 
-	private static int num(Properties prop, String name) throws Exception {
+	private static int num(Properties prop, String name) {
 		String str = prop.getProperty(name);
 
 		if(str == null) {
-			throw new Exception("Config option " + name + " not found.");
+			throw new IllegalStateException("Config option " + name + " not found.");
 		}
 
 		int result;
@@ -188,11 +180,11 @@ public final class Config {
 		try {
 			result = Integer.parseInt(str);
 		} catch(Exception e) {
-			throw new Exception("Config option " + name + " is not a valid number (\"" + str + "\").");
+			throw new IllegalStateException("Config option " + name + " is not a valid number (\"" + str + "\").");
 		}
 
 		if(result < 0) {
-			throw new Exception("Config option " + name + " is negative (" + str + ")");
+			throw new IllegalStateException("Config option " + name + " is negative (" + str + ")");
 		}
 
 		return result;
