@@ -1,4 +1,14 @@
-I just can't catch a break can I.  
-- Fix an issue where light/sky colors wouldn't react to time properly  
-
-HOPEFULLY no more critical issues after this-then 1.19 versions won't receive any more updates.
+- Port to 1.21.2
+- Mod Menus:
+  - Add mod icon to Fabric Mod Menu ([PR](https://github.com/ItsThosea/BadOptimizations/pull/71))
+  - Add mod icon to Forge/Neo Mod Menu
+  - Link Website/Issues buttons on Fabric Mod Menu
+  - Activate config screen buttons on Fabric/Neo mod menus (it will open the config file)
+- Marked entity renderer optimizations as incompatible with:
+  - BedrockSkinUtility
+  - SkinShuffle
+  - This seems to be the cause of a lot of problems...
+  - Override with `ignore_mod_incompatibilities`
+- Config version 4:
+  - Rephrase comments
+  - The game will now crash if the config is invalid instead of showing a pre-title-screen warning.
