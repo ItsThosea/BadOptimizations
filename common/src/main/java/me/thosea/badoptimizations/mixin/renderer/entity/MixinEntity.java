@@ -22,7 +22,7 @@ public abstract class MixinEntity implements EntityMethods {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public EntityRenderer<?> bo$getRenderer() {
+	public EntityRenderer<?, ?> bo$getRenderer() {
 		return bo$typeMethods.bo$getRenderer();
 	}
 }

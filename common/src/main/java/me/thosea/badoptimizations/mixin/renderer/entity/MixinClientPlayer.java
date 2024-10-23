@@ -13,7 +13,7 @@ public abstract class MixinClientPlayer extends MixinEntity { // renderer.MixinE
 	@Shadow public abstract SkinTextures getSkinTextures();
 
 	@Override
-	public EntityRenderer<?> bo$getRenderer() {
+	public EntityRenderer<?, ?> bo$getRenderer() {
 		Model model = getSkinTextures().model();
 
 		if(model == Model.WIDE) {

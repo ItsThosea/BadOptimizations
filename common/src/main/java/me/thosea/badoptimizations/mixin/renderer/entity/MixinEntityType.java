@@ -7,15 +7,15 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(EntityType.class)
 public class MixinEntityType implements EntityTypeMethods {
-	private EntityRenderer<?> bo$renderer;
+	private EntityRenderer<?, ?> bo$renderer;
 
 	@Override
-	public EntityRenderer<?> bo$getRenderer() {
+	public EntityRenderer<?, ?> bo$getRenderer() {
 		return bo$renderer;
 	}
 
 	@Override
-	public void bo$setRenderer(EntityRenderer<?> renderer) {
+	public void bo$setRenderer(EntityRenderer<?, ?> renderer) {
 		this.bo$renderer = renderer;
 	}
 }

@@ -6,5 +6,5 @@ import net.minecraft.entity.Entity;
 public interface EntityMethods {
 	void bo$refreshEntityData(int data);
 
-	<T extends Entity> EntityRenderer<T> bo$getRenderer();
+	<T extends Entity> EntityRenderer<T, ?> bo$getRenderer();
 }

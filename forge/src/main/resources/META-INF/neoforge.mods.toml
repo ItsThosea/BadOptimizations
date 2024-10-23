@@ -17,7 +17,7 @@ logoBlur=false
 [[dependencies.badoptimizations]]
    modId="minecraft"
    mandatory=true
-   versionRange="[1.20.5,)"
+   versionRange="[1.21.2,)"
    ordering="NONE"
    side="CLIENT"
 

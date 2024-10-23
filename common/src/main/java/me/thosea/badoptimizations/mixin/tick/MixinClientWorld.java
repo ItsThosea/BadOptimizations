@@ -8,9 +8,9 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.MutableWorldProperties;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
@@ -21,8 +21,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.function.Supplier;
 
 import static me.thosea.badoptimizations.other.CommonColorFactors.lastLightningTicks;
 import static me.thosea.badoptimizations.other.CommonColorFactors.rainGradientMultiplier;
@@ -35,14 +33,14 @@ public abstract class MixinClientWorld extends World {
 	private BiomeSkyColorGetter bo$biomeColors;
 	private CommonColorFactors bo$commonFactors;
 
-	private Vec3d bo$skyColorCache;
+	private int bo$skyColorCache;
 
 	private int bo$lastBiomeColor;
 	private Vec3d bo$biomeColorVector;
 
 	@Inject(method = "getSkyColor", at = @At("HEAD"), cancellable = true)
-	private void onGetSkyColor(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
-		if(bo$skyColorCache == null || client.player == null) return;
+	private void onGetSkyColor(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Integer> cir) {
+		if(bo$skyColorCache == Integer.MIN_VALUE || client.player == null) return;
 
 		CommonColorFactors.tick();
 
@@ -77,10 +75,7 @@ public abstract class MixinClientWorld extends World {
 		return false;
 	}
 
-	@Shadow public abstract int getLightningTicksLeft();
-	@Shadow public abstract Vec3d getSkyColor(Vec3d cameraPos, float tickDelta);
-
-	private Vec3d bo$calcSkyColor(float delta) {
+	private int bo$calcSkyColor(float delta) {
 		float angle = MathHelper.cos(getSkyAngle(1.0f) * 6.2831855F) * 2.0F + 0.5F;
 		angle = MathHelper.clamp(angle, 0.0F, 1.0F);
 
@@ -114,11 +109,11 @@ public abstract class MixinClientWorld extends World {
 			z = z * (1.0F - lightningMultiplier) + lightningMultiplier;
 		}
 
-		return new Vec3d(x, y, z);
+		return ColorHelper.getArgb(new Vec3d(x, y, z));
 	}
 
 	@Inject(method = "getSkyColor", at = @At("RETURN"))
-	private void afterGetSkyColor(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Vec3d> cir) {
+	private void afterGetSkyColor(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Integer> cir) {
 		bo$skyColorCache = cir.getReturnValue();
 	}
 
@@ -130,8 +125,8 @@ public abstract class MixinClientWorld extends World {
 		bo$biomeColors = BiomeSkyColorGetter.of(getBiomeAccess());
 	}
 
-	protected MixinClientWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, DynamicRegistryManager registryManager, RegistryEntry<DimensionType> dimensionEntry, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long biomeAccess, int maxChainedNeighborUpdates) {
-		super(properties, registryRef, registryManager, dimensionEntry, profiler, isClient, debugWorld, biomeAccess, maxChainedNeighborUpdates);
+	protected MixinClientWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, DynamicRegistryManager registryManager, RegistryEntry<DimensionType> dimensionEntry, boolean isClient, boolean debugWorld, long seed, int maxChainedNeighborUpdates) {
+		super(properties, registryRef, registryManager, dimensionEntry, isClient, debugWorld, seed, maxChainedNeighborUpdates);
 		throw new AssertionError("nuh uh");
 	}
 }

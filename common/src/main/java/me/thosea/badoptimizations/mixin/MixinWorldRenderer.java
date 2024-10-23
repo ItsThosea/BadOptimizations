@@ -8,30 +8,21 @@ import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.world.ClientWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(value = WorldRenderer.class, priority = 700)
 public abstract class MixinWorldRenderer {
-	@WrapOperation(method = "renderSky(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;FLnet/minecraft/client/render/Camera;ZLjava/lang/Runnable;)V",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getSkyAngle(F)F", ordinal = 0))
-	private float cacheSkyAngle(ClientWorld world, float delta, Operation<Float> original,
-	                            @Share("skyAngle") LocalFloatRef skyAngle) {
+	// method_62215 = lambda in renderSky
+	@WrapOperation(method = "method_62215", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getSkyAngleRadians(F)F"))
+	private float cacheSkyAngleRadians(ClientWorld world, float delta, Operation<Float> original,
+	                                   @Share("skyAngleRadians") LocalFloatRef skyAngleRadians) {
 		float result = original.call(world, delta);
-		skyAngle.set(result);
+		skyAngleRadians.set(result);
 		return result;
 	}
 
-	@Redirect(method = "renderSky(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;FLnet/minecraft/client/render/Camera;ZLjava/lang/Runnable;)V",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getSkyAngleRadians(F)F"))
-	private float getSkyAngleRadians(ClientWorld world, float delta,
-	                                 @Share("skyAngle") LocalFloatRef skyAngle) {
-		return skyAngle.get() * 6.2831855F;
-	}
-
-	@Redirect(method = "renderSky(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;FLnet/minecraft/client/render/Camera;ZLjava/lang/Runnable;)V",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getSkyAngle(F)F", ordinal = 1))
-	private float getSkyAngle(ClientWorld world, float delta,
-	                          @Share("skyAngle") LocalFloatRef skyAngle) {
-		return skyAngle.get();
+	@WrapOperation(method = "method_62215", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/world/ClientWorld;getSkyAngle(F)F"))
+	private float getSkyAngle(ClientWorld instance, float delta, Operation<Float> original,
+	                          @Share("skyAngleRadians") LocalFloatRef skyAngleRadians) {
+		return skyAngleRadians.get() / 6.2831855F;
 	}
 }
