@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 public class BOMixinPlugin implements IMixinConfigPlugin {
-
 	@Override
 	public void onLoad(String mixinPackage) {
 		Config.load();
@@ -19,9 +18,7 @@ public class BOMixinPlugin implements IMixinConfigPlugin {
 	public boolean shouldApplyMixin(String targetClassName, String mixin) {
 		mixin = mixin.substring("me.thosea.badoptimizations.mixin.".length());
 
-		if(mixin.equals("MixinClient_ShowInvalidConfig")) {
-			return Config.error != null;
-		} else if(mixin.equals("tick.MixinLightmapManager") || mixin.equals("accessor.GameRendererAccessor") || mixin.equals("accessor.PlayerAccessor")) {
+		if(mixin.equals("tick.MixinLightmapManager") || mixin.equals("accessor.GameRendererAccessor") || mixin.equals("accessor.PlayerAccessor")) {
 			return Config.enable_lightmap_caching;
 		} else if(mixin.equals("tick.MixinClientWorld")) {
 			return Config.enable_sky_color_caching;
