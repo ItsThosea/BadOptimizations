@@ -12,6 +12,7 @@ import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.dimension.DimensionType;
+import org.joml.Vector3fc;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,7 +27,11 @@ public abstract class MixinLightmapExtractor {
 	private EnvironmentAttributeProbe bo$probe;
 	private GameRendererAccessor bo$gameRendererAccessor;
 
-	private int bo$lastSkyColor;
+	// darnit, valhalla is so close...
+	private float bo$lastSkyColorR;
+	private float bo$lastSkyColorG;
+	private float bo$lastSkyColorB;
+
 	private float bo$lastSkyFactor;
 
 	private float bo$lastEndFactor = 0f;
@@ -53,10 +58,18 @@ public abstract class MixinLightmapExtractor {
 	}
 
 	private boolean bo$isDirty() {
-		int skyColor = bo$probe.getValue(EnvironmentAttributes.SKY_LIGHT_COLOR, 1.0f);
+		Vector3fc skyColor = bo$probe.getValue(EnvironmentAttributes.SKY_LIGHT_COLOR, 1.0f);
 		float skyFactor = bo$probe.getValue(EnvironmentAttributes.SKY_LIGHT_FACTOR, 1.0f);
-		if(bo$lastSkyColor != skyColor || bo$lastSkyFactor != skyFactor) {
-			this.bo$lastSkyColor = skyColor;
+		if(
+			// stupid formatter
+			/*  */ bo$lastSkyColorR != skyColor.x()
+				|| bo$lastSkyColorG != skyColor.y()
+				|| bo$lastSkyColorB != skyColor.z()
+				|| bo$lastSkyFactor != skyFactor
+		) {
+			this.bo$lastSkyColorR = skyColor.x();
+			this.bo$lastSkyColorG = skyColor.y();
+			this.bo$lastSkyColorB = skyColor.z();
 			this.bo$lastSkyFactor = skyFactor;
 			return true;
 		}

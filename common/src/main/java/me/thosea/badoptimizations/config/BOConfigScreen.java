@@ -1,8 +1,8 @@
 package me.thosea.badoptimizations.config;
 
+import com.mojang.blaze3d.Blaze3D;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Util;
 
 import java.nio.file.Files;
 
@@ -24,7 +24,7 @@ public final class BOConfigScreen extends Screen {
 				throw new RuntimeException("Failed to generate BadOptimizations config", e);
 			}
 		}
-		Util.getPlatform().openUri(Config.FILE.toUri());
+		Blaze3D.openUri(Config.FILE.toUri());
 		minecraft.setScreenAndShow(parent);
 	}
 }

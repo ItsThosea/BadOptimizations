@@ -3,7 +3,7 @@ loaderVersion="[1,)"
 license="MIT"
 issueTrackerURL="https://github.com/imthosea/BadOptimizations/issues"
 # Forge 1.20.4- requires mod icon to be in root folder
-logoFile="badoptimizations-icon.png"
+bannerFile="badoptimizations-icon.png"
 logoBlur=false
 
 [[mods]]
@@ -17,7 +17,7 @@ logoBlur=false
 [[dependencies.badoptimizations]]
    modId="minecraft"
    mandatory=true
-   versionRange="[26.2,)"
+   versionRange="[26.3,)"
    ordering="NONE"
    side="CLIENT"
 

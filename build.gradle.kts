@@ -105,7 +105,7 @@ subprojects {
 		val platform = "${project.property("loom.platform")}"
 
 		file = file("build/libs/${jarName}")
-		displayName = "$mod_version (26.2/$platform)"
+		displayName = "$mod_version (26.3/$platform)"
 
 		version = "$mod_version"
 		type = STABLE
@@ -119,13 +119,13 @@ subprojects {
 		modrinth {
 			accessToken = "$mr_token"
 			projectId = "g96Z4WVZ"
-			minecraftVersions.add("26.2")
+			minecraftVersions.add("26.3")
 		}
 
 		curseforge {
 			accessToken = "$cf_token"
 			projectId = "949555"
-			minecraftVersions.add("26.2")
+			minecraftVersions.add("26.3")
 			clientRequired = true
 		}
 
